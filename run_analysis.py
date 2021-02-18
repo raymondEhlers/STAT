@@ -328,18 +328,30 @@ class RunAnalysis(run_analysis_base.RunAnalysisBase):
     plt.close('all')
     
     # Write result to pkl
+    verbose = True
     if E:
         self.output_dict['T_array'] = x_array
         self.output_dict['T_qhat_truth'] = qhat_truth             # Truth
         self.output_dict['T_qhat_mean'] = qhat_mean               # Extracted mean
         self.output_dict['T_qhat_closure'] = qhat_closure         # Extracted posteriors
         self.output_dict['T_qhat_closure2'] = qhat_closure2       # Extracted posteriors
+        if verbose:
+          self.output_dict['T_credible_up'] = credible_up           # Extracted posteriors
+          self.output_dict['T_credible_low'] = credible_low         # Extracted posteriors
+          self.output_dict['T_credible_up2'] = credible_up2         # Extracted posteriors
+          self.output_dict['T_credible_low2'] = credible_low2       # Extracted posteriors
+
     if T:
         self.output_dict['E_array'] = x_array
         self.output_dict['E_qhat_truth'] = qhat_truth             # Truth
         self.output_dict['E_qhat_mean'] = qhat_mean               # Extracted mean
         self.output_dict['E_qhat_closure'] = qhat_closure         # Extracted posteriors
         self.output_dict['E_qhat_closure2'] = qhat_closure2       # Extracted posteriors
+        if verbose:
+          self.output_dict['E_credible_up'] = credible_up           # Extracted posteriors
+          self.output_dict['E_credible_low'] = credible_low         # Extracted posteriors
+          self.output_dict['E_credible_up2'] = credible_up2         # Extracted posteriors
+          self.output_dict['E_credible_low2'] = credible_low2       # Extracted posteriors
     
   #---------------------------------------------------------------
   # Plot design points
@@ -354,7 +366,20 @@ class RunAnalysis(run_analysis_base.RunAnalysisBase):
       transformed_design_points[:,1] = design_points[:,0] - design_points[:,0] * design_points[:,1]
     else:
       transformed_design_points = np.copy(design_points)
+      
+    # Plot A vs. C example
+    i = 2
+    j = 0
+    plt.locator_params(nbins=8)
+    plt.scatter(transformed_design_points[:, j], transformed_design_points[:, i],
+                c=sns.xkcd_rgb['denim blue'], alpha=0.5)
+    plt.title('Design Points of Inputs A,C', fontsize=16, weight='bold')
+    plt.xlabel(self.Names[j], fontsize=20)
+    plt.ylabel(self.Names[i], fontsize=20, rotation=0, labelpad=15)
+    plt.savefig('{}/DesignPoints_AC.pdf'.format(self.plot_dir), dpi = 192)
+    plt.close('all')
     
+    # Plot grid of 2D projections
     NDimension = len(self.AllData["labels"])
     figure, axes = plt.subplots(figsize = (3 * NDimension, 3 * NDimension), ncols = NDimension, nrows = NDimension)
     for i, row in enumerate(axes):
