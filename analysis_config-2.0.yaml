@@ -1,0 +1,28 @@
+# Configuration for STAT analysis
+debug_level: 0
+
+# Specify model
+models:
+  LBT:
+    parameter_names: ["$\\alpha_S^{\\rm{fix}}$", "$Q_0$", "$c_1$", "$c_2$", "$\\tau_0$"]
+    min: [0.1, 0, 0, 0, 0]
+    max: [0.5, 10, 100, 100, 1.5]
+    alpha: 0.2
+
+# Design parameters
+generate_design: True
+n_points_per_dimension: 10
+
+# Emulator parameters
+retrain_emulator: True
+n_pc: 3
+n_restarts: 50
+
+# MCMC parameters
+rerun_mcmc: True
+n_walkers: 500
+n_burn_steps: 1000
+n_steps: 500
+
+# Closure test parameters
+confidence: [0.9, 0.6]

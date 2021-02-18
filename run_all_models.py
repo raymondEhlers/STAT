@@ -30,8 +30,7 @@ class RunAllModels():
     with open(config_file, 'r') as stream:
       config = yaml.safe_load(stream)
       
-    self.models = config['models']
-    self.alpha = config['alpha']
+    self.models = config['models'].keys()
 
   #---------------------------------------------------------------
   # Run analysis
@@ -52,16 +51,14 @@ class RunAllModels():
         
       # Write a new default.p (must be done before I can call the analysis script...)
       init = run_analysis_base.RunAnalysisBase(self.config_file, model, self.output_dir,
-                                               self.alpha[i], self.exclude_index)
-      init.init_model_type()
+                                               self.exclude_index)
       init.initialize()
         
       # Run analysis
-      os.system('python run_analysis.py -c {} -m {} -o {} -a {} -i {}'.format(self.config_file,
-                                                                              model,
-                                                                              self.output_dir,
-                                                                              self.alpha[i],
-                                                                              self.exclude_index))
+      os.system('python run_analysis.py -c {} -m {} -o {} -i {}'.format(self.config_file,
+                                                                        model,
+                                                                        self.output_dir,
+                                                                        self.exclude_index))
 
 ##################################################################
 if __name__ == '__main__':
@@ -73,7 +70,7 @@ if __name__ == '__main__':
                         default='./STATGallery')
     parser.add_argument('-c', '--configFile', action='store',
                         type=str, metavar='configFile',
-                        default='analysis_config.yaml',
+                        default='analysis_config-2.0.yaml',
                         help='Path of config file')
     parser.add_argument('-i', '--excludeIndex', action='store',
                         type=int, metavar='excludeIndex',

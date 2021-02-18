@@ -29,10 +29,10 @@ class RunAnalysis(run_analysis_base.RunAnalysisBase):
   #---------------------------------------------------------------
   # Constructor
   #---------------------------------------------------------------
-  def __init__(self, config_file, model, output_dir, alpha, exclude_index, **kwargs):
+  def __init__(self, config_file, model, output_dir, exclude_index, **kwargs):
   
     # Initialize base class
-    super(RunAnalysis, self).__init__(config_file, model, output_dir, alpha, exclude_index, **kwargs)
+    super(RunAnalysis, self).__init__(config_file, model, output_dir, exclude_index, **kwargs)
     
     # Write dictionary of results to pickle
     self.output_dict = {}
@@ -373,7 +373,7 @@ class RunAnalysis(run_analysis_base.RunAnalysisBase):
     plt.locator_params(nbins=8)
     plt.scatter(transformed_design_points[:, j], transformed_design_points[:, i],
                 c=sns.xkcd_rgb['denim blue'], alpha=0.5)
-    plt.title('Design Points of Inputs A,C', fontsize=16, weight='bold')
+    plt.title('Design Points of Inputs {},{}'.format(self.Names[i], self.Names[j]), fontsize=16, weight='bold')
     plt.xlabel(self.Names[j], fontsize=20)
     plt.ylabel(self.Names[i], fontsize=20, rotation=0, labelpad=15)
     plt.savefig('{}/DesignPoints_AC.pdf'.format(self.plot_dir), dpi = 192)
@@ -384,17 +384,19 @@ class RunAnalysis(run_analysis_base.RunAnalysisBase):
     figure, axes = plt.subplots(figsize = (3 * NDimension, 3 * NDimension), ncols = NDimension, nrows = NDimension)
     for i, row in enumerate(axes):
         for j, ax in enumerate(row):
+        
+            if i==NDimension-1 or (j==0 and i>3) or (j==NDimension-1 and i>3):
+                ax.set_xlabel(self.Names[j], fontsize=20)
+            if j==0:
+                ax.set_ylabel(self.Names[i], fontsize=20)
+                
             if i==j:
-                ax.hist(transformed_design_points[:,i], bins=50,
-                        range=self.Ranges_transformed[:,i], histtype='step', color='green')
-                ax.set_xlabel(self.Names[i])
+                ax.hist(transformed_design_points[:,i], bins=10,
+                        range=self.Ranges_transformed[:,i], histtype='step', color=sns.xkcd_rgb['denim blue'])
                 ax.set_xlim(*self.Ranges_transformed[:,j])
             if i>j:
-                ax.hist2d(transformed_design_points[:, j], transformed_design_points[:, i],
-                          bins=50, range=[self.Ranges_transformed[:,j], self.Ranges_transformed[:,i]],
-                          cmap='Greens')
-                ax.set_xlabel(self.Names[j])
-                ax.set_ylabel(self.Names[i])
+                ax.scatter(transformed_design_points[:, j], transformed_design_points[:, i],
+                            c=sns.xkcd_rgb['denim blue'], alpha=0.5)
                 ax.set_xlim(*self.Ranges_transformed[:,j])
                 ax.set_ylim(*self.Ranges_transformed[:,i])
                 
@@ -699,10 +701,6 @@ if __name__ == '__main__':
                         type=str, metavar='model',
                         default='LBT',
                         help='model')
-    parser.add_argument('-a', '--alpha', action='store',
-                        type=str, metavar='alpha',
-                        default=0,
-                        help='alpha')
     parser.add_argument('-o', '--outputdir', action='store',
                         type=str, metavar='outputdir',
                         default='./STATGallery')
@@ -722,7 +720,8 @@ if __name__ == '__main__':
       print('File \"{0}\" does not exist! Exiting!'.format(args.configFile))
       sys.exit(0)
 
-    analysis = RunAnalysis(config_file=args.configFile, model=args.model,
-                           output_dir=args.outputdir, alpha=args.alpha,
+    analysis = RunAnalysis(config_file=args.configFile,
+                           model=args.model,
+                           output_dir=args.outputdir,
                            exclude_index=args.excludeIndex)
     analysis.run_model()

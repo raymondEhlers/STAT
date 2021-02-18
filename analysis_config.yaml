@@ -2,13 +2,44 @@
 debug_level: 0
 
 # Specify model: ['LBT', 'MATTER', 'MATTER+LBT1', 'MATTER+LBT2']
-models: ['LBT', 'MATTER', 'MATTER+LBT1', 'MATTER+LBT2']
+#   For Matter or LBT: (A, B, C, D)
+#   For Matter+LBT 1: (A, C, B, D, Q), i.e. transformed versions of {A+C, A/(A+C), B, D, Q} from .dat
+#   For Matter+LBT 2: (A, C, D, Q), i.e. transformed versions of {A+C, A/(A+C), D, Q} from .dat
+models:
+  LBT:
+    parameter_names: ["$A$", "$B$", "$C$", "$D$"]
+    min: [0, 0, 0, 0]
+    max: [2, 20, 2, 20]
+    alpha: 0.2
+  MATTER:
+    parameter_names: ["$A$", "$B$", "$C$", "$D$"]
+    min: [0, 0, 0, 0]
+    max: [2, 20, 2, 20]
+    alpha: 0.2
+  MATTER+LBT1:
+    parameter_names: ["$A$", "$C$", "$B$", "$D$", "$Q$"]
+    min: [0, 0, 0, 0, 1]
+    max: [1.5, 1.5, 20, 20, 4]
+    parameter_names_untransformed: ["$A+C$", "$A/(A+C)$", "$B$", "$D$", "$Q$"]
+    min_untransformed: [0, 0, 0, 0, 1]
+    max_untransformed: [1.5, 1, 20, 20, 4]
+    alpha: 0.
+  MATTER+LBT2:
+    parameter_names: ["$A$", "$C$", "$D$", "$Q$"]
+    min: [0, 0, 0, 1]
+    max: [1.5, 1.5, 20, 4]
+    parameter_names_untransformed: ["$A+C$", "$A/(A+C)$", "$D$", "$Q$"]
+    min_untransformed: [0, 0, 0, 1]
+    max_untransformed: [1.5, 1, 20, 4]
+    alpha: 0.
+
+# Design parameters
+generate_design: False
 
 # Emulator parameters
 retrain_emulator: True
 n_pc: 3
 n_restarts: 50
-alpha: [0.2, 0.2, 0., 0.]
 
 # MCMC parameters
 rerun_mcmc: True

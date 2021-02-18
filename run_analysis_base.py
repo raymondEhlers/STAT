@@ -14,6 +14,7 @@ import os
 import sys
 import pickle
 import yaml
+import subprocess
 
 import reader
 
@@ -23,11 +24,10 @@ class RunAnalysisBase():
   #---------------------------------------------------------------
   # Constructor
   #---------------------------------------------------------------
-  def __init__(self, config_file, model, output_dir, alpha=0., exclude_index=-1, **kwargs):
+  def __init__(self, config_file, model, output_dir, exclude_index=-1, **kwargs):
     super(RunAnalysisBase, self).__init__(**kwargs)
     
     self.model = model
-    self.alpha = alpha
     self.output_dir_base = output_dir
     self.exclude_index = exclude_index
     
@@ -57,9 +57,34 @@ class RunAnalysisBase():
   
     # Read config file
     with open(config_file, 'r') as stream:
-      config = yaml.safe_load(stream)
+        config = yaml.safe_load(stream)
+      
+    # Get model parameters
+    model_dict = config['models'][self.model]
+    self.alpha = model_dict['alpha']
+    self.Names = [r'{}'.format(s) for s in model_dict['parameter_names']]
+    if 'parameter_names_untransformed' in model_dict:
+        self.Names_untransformed = [r'{}'.format(s) for s in model_dict['parameter_names_untransformed']]
+    else:
+        self.Names_untransformed = self.Names
+      
+    min = model_dict['min']
+    max = model_dict['max']
+    self.ranges_transformed = [tuple([min[i], max[i]]) for i in range(len(min))]
+    if 'min_untransformed' in model_dict:
+        min_untransformed = model_dict['min_untransformed']
+        max_untransformed = model_dict['max_untransformed']
+        self.ranges = [tuple([min_untransformed[i], max_untransformed[i]]) for i in range(len(min))]
+    else:
+        self.ranges = self.ranges_transformed
+    self.Ranges = np.array(self.ranges).T
+    self.Ranges_transformed = np.array(self.ranges_transformed).T
       
     self.debug_level = config['debug_level']
+    
+    # Design parameters
+    self.generate_design = config['generate_design']
+    self.n_points_per_dimension = config['n_points_per_dimension']
     
     # Emulator parameters
     self.retrain_emulator = config['retrain_emulator']
@@ -82,47 +107,66 @@ class RunAnalysisBase():
   
     # Initialize a few settings
     self.output_dir = os.path.join(self.output_dir_base, self.model)
-    self.init_model_type()
     print(self)
     
-    # Run user-defined function
-    self.run_analysis()
-
-  #---------------------------------------------------------------
-  # Run analysis
-  #---------------------------------------------------------------
-  def init_model_type(self):
+    if self.generate_design:
     
-    # Set model parameter ranges
-    # For Matter or LBT: (A, B, C, D)
-    # For Matter+LBT 1: (A, C, B, D, Q), i.e. transformed versions of {A+C, A/(A+C), B, D, Q} from .dat
-    # For Matter+LBT 2: (A, C, D, Q), i.e. transformed versions of {A+C, A/(A+C), D, Q} from .dat
-    if self.model == 'MATTER':
-      self.ranges = [(0, 2), (0, 20), (0, 2), (0, 20)]
-      self.ranges_transformed = self.ranges
-    elif self.model == 'LBT':
-      self.ranges = [(0, 2), (0, 20), (0, 2), (0, 20)]
-      self.ranges_transformed = self.ranges
-    elif self.model == 'MATTER+LBT1':
-      self.ranges = [(0, 1.5), (0, 1), (0, 20), (0, 20), (1, 4)]
-      self.ranges_transformed = [(0, 1.5), (0, 1.5), (0, 20), (0, 20), (1, 4)]
-    elif self.model == 'MATTER+LBT2':
-      self.ranges = [(0, 1.5), (0, 1), (0, 20), (1, 4)]
-      self.ranges_transformed = [(0, 1.5), (0, 1.5), (0, 20), (1, 4)]
+        # Generate a separate design for each collision system
+        #   (since each emulator, i.e. PC, will get different
+        #    design points in the iterative process)
+        ndim = len(self.ranges)
+        npoints = ndim * self.n_points_per_dimension
+        min = self.Ranges[0]
+        max = self.Ranges[1]
 
-    self.Ranges = np.array(self.ranges).T
-    self.Ranges_transformed = np.array(self.ranges_transformed).T
-      
-    if self.model == 'MATTER' or self.model == 'LBT':
-      self.Names = [r"$A$", r"$B$", r"$C$", r"$D$"]
-      self.Names_untransformed = self.Names
-    elif self.model == 'MATTER+LBT1':
-      self.Names = [r"$A$", r"$C$", r"$B$", r"$D$", r"$Q$"]
-      self.Names_untransformed = [r"$A+C$", r"$A/(A+C)$", r"$B$", r"$D$", r"$Q$"]
-    elif self.model == 'MATTER+LBT2':
-      self.Names = [r"$A$", r"$C$", r"$D$", r"$Q$"]
-      self.Names_untransformed = [r"$A+C$", r"$A/(A+C)$", r"$D$", r"$Q$"]
- 
+        # Generate design in [0,1]x[0,1]x...
+        design_unit = self.generate_lhs(npoints=npoints, ndim=ndim, seed=0)
+
+        # Scale to variable ranges
+        design = min + (max - min)*design_unit
+        
+        # Write to file
+        # Version 1.0
+        header = 'Version 1.0 \nParameter'
+        for i in range(ndim):
+            header += ' {}'.format(self.Names[i])
+        np.savetxt(os.path.join(self.workdir, 'design.dat'), design, header=header)
+        
+        # Plot the design
+        self.plot_dir = os.path.join(self.workdir, 'plots')
+        if not os.path.exists(self.plot_dir):
+            os.makedirs(self.plot_dir)
+        
+        self.AllData = {}
+        self.RawDesign = reader.ReadDesign(os.path.join(self.workdir,'Design.dat'))
+        self.AllData["design"] = self.RawDesign["Design"]
+        self.AllData["labels"] = self.RawDesign["Parameter"]
+        self.plot_design()
+    
+    else:
+    
+        # Run user-defined function
+        self.run_analysis()
+
+  #---------------------------------------------------------------
+  # Generate latin hypercube using R lhs package (based on src.Design)
+  #---------------------------------------------------------------
+  def generate_lhs(self, npoints=0, ndim=0, seed=0):
+
+    proc = subprocess.run(
+            ['R', '--slave'],
+            input="""
+            library('lhs')
+            set.seed({})
+            write.table(maximinLHS({}, {}), col.names=FALSE, row.names=FALSE)
+            """.format(seed, npoints, ndim).encode(),
+            stdout=subprocess.PIPE,
+            check=True
+          )
+
+    lhs = np.array([l.split() for l in proc.stdout.splitlines()], dtype=float)
+    return lhs
+
   #---------------------------------------------------------------
   # Run user-defined function
   #---------------------------------------------------------------
