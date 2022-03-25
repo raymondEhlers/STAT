@@ -27,6 +27,8 @@ def get_hepdata(configFileEntry = None):
   data_fig = configFileEntry['data_fig']
   data_exp = configFileEntry['data_exp']
   data_sys = configFileEntry['data_sys']
+  # May not always be defined, so need to handle a bit more carefully
+  data_qualifiers = configFileEntry.get("data_qualifiers", [] * len(data_sys))
   data_meas = configFileEntry['data_meas']
   data_cent = configFileEntry['data_cent']
   data_year = configFileEntry['data_year']
@@ -61,28 +63,76 @@ def get_hepdata(configFileEntry = None):
     # Fetch yaml_data from hepdata url
     response = urlopen(data_url[i],context=context)
     content  = response.read().decode('utf-8')
-    yaml_data = yaml.load(content)
+    yaml_data = yaml.safe_load(content)
+
+    # Determine which dependent variable entry to take
+    n_dependent_variable_entries = len(yaml_data['dependent_variables'])
+    if n_dependent_variable_entries > 1 and "data_qualifiers" in configFileEntry:
+      dependent_variable_index = -1
+      # Search the dependent variables qualifiers to find the one that matches
+      selected_qualifiers = data_qualifiers[i]
+      print(f"Searching for the right dependent variable with qualifiers {selected_qualifiers}")
+      for _i, dependent_variable_entry in enumerate(yaml_data["dependent_variables"]):
+        qualifiers_list = dependent_variable_entry["qualifiers"]
+        for qualifier in qualifiers_list:
+          if qualifier["name"] == selected_qualifiers["name"] and qualifier["value"] == selected_qualifiers["value"]:
+            dependent_variable_index = _i
+            break
+      if dependent_variable_index < 0:
+        raise ValueError(f"Unable to find qualifiers {selected_qualifiers}")
+    elif n_dependent_variable_entries > 1:
+      raise ValueError(
+        "There are multiple dependent variables entries, and we don't know which one to select."
+        " Please specify a qualifier to select the right dependent variable."
+      )
+    else:
+      # Fall back to 0 by default if not specified
+      dependent_variable_index = 0
+    print(f"Index of dependent variable to extract: {dependent_variable_index}")
+
+    # Sometimes, not all values are provided. If they're not provided, we should skip them.
+    # This includes skipping the bin sizes, etc.
+    _indices_to_skip = []
+    for _i_value, v in enumerate(yaml_data['dependent_variables'][dependent_variable_index]['values']):
+      try:
+        float(v["value"])
+      except ValueError:
+        _indices_to_skip.append(_i_value)
+    print(f"Skipping indices due to missing values: {_indices_to_skip}")
 
     # Fetch XY names from headers
     xname = yaml_data['independent_variables'][0]['header']['name']
-    yname = yaml_data['dependent_variables'][0]['header']['name']
+    yname = yaml_data['dependent_variables'][dependent_variable_index]['header']['name']
     data_header += '# XY ' + xname + ' ' + yname + '\n'
 
     # Fetch error labels from first entry to create label for header
     error_label = ''
-    first_entry = yaml_data['dependent_variables'][0]['values'][0]
-    for err in first_entry['errors']:
-      error_label += err['label']+',low ' + err['label']+',high '
+    # The first entry may not have errors (for example, CMS 5 TeV Jet RAA),
+    # so we have to search for the first entry with errors.
+    for _i_value, _entry in enumerate(yaml_data['dependent_variables'][dependent_variable_index]['values']):
+      if _i_value in _indices_to_skip:
+        continue
+      if "errors" in _entry:
+        for err in _entry['errors']:
+          error_label += err['label']+',low ' + err['label']+',high '
+        # Once we've found one entry, we're done.
+        break
+    else:
+      raise ValueError("Are there errors in this file?")
     data_header +='# Label xmin xmax y ' + error_label + '\n'
 
     # print(yaml_data['independent_variables'][0]['values'])
-    for x in yaml_data['independent_variables'][0]['values']:
+    for _i_value, x in enumerate(yaml_data['independent_variables'][0]['values']):
+      if _i_value in _indices_to_skip:
+        continue
       xlo.append(x['low'])
       xhi.append(x['high'])
       # print(x['low'],x['high'])
 
     # print(yaml_data['dependent_variables'][0]['values'])
-    for v in yaml_data['dependent_variables'][0]['values']:
+    for _i_value, v in enumerate(yaml_data['dependent_variables'][dependent_variable_index]['values']):
+      if _i_value in _indices_to_skip:
+        continue
       # print(v['value'])
       yval.append(v['value'])
 
@@ -104,7 +154,7 @@ def get_hepdata(configFileEntry = None):
     # Check that we have same number of x and y entries
     try:
       len(xlo)==len(yval)
-    except Error:
+    except Exception:
       message = ' Unequal x and y entries ' + str(len(xlo)) + ' ' + str(len(yval))
       sys.exit(message)
 
