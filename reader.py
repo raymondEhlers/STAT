@@ -27,7 +27,7 @@ def ReadDesign(FileName):
         elif(Items[1] == 'Parameter'):
             Result["Parameter"] = Items[2:]
 
-    if(Version != '1.0'):
+    if(Version not in ['1.0', '2.0']):
         raise AssertionError('Bad file version number while reading design points')
 
     # Then read the actual design parameters
@@ -62,7 +62,7 @@ def ReadData(FileName):
         elif(Items[1] == 'Label'):
             Result["Label"] = Items[2:]
 
-    if(Version != '1.0'):
+    if(Version not in ['1.0', '2.0']):
         raise AssertionError('Bad file version number while reading design points')
 
     XMode = ''
@@ -115,7 +115,7 @@ def ReadCovariance(FileName):
         elif(Items[1] == 'Data2'):
             Result["Data2"] = Items[2]
 
-    if(Version != '1.0'):
+    if(Version not in ['1.0', '2.0']):
         raise AssertionError('Bad file version number while reading design points')
 
     # Then read the actual covariance matrix
@@ -142,7 +142,7 @@ def ReadPrediction(FileName):
         elif(Items[1] == 'Design'):
             Result["Design"] = Items[2]
 
-    if(Version != '1.0'):
+    if(Version not in ['1.0', '2.0']):
         raise AssertionError('Bad file version number while reading design points')
 
     # Then read the actual model predictions

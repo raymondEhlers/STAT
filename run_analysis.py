@@ -695,7 +695,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Jetscape STAT analysis')
     parser.add_argument('-c', '--configFile', action='store',
                         type=str, metavar='configFile',
-                        default='analysis_config.yaml',
+                        default='analysis_config_QM.yaml',
                         help='Path of config file')
     parser.add_argument('-m', '--model', action='store',
                         type=str, metavar='model',

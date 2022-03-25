@@ -6,7 +6,7 @@ import os
 import argparse
 import yaml
 
-import run_analysis_base
+import run_analysis
 
 ################################################################
 class RunAllModels():
@@ -49,16 +49,13 @@ class RunAllModels():
       else:
         print('{} does not exist'.format(pkl_path))
         
-      # Write a new default.p (must be done before I can call the analysis script...)
-      init = run_analysis_base.RunAnalysisBase(self.config_file, model, self.output_dir,
-                                               self.exclude_index)
-      init.initialize()
-        
       # Run analysis
-      os.system('python run_analysis.py -c {} -m {} -o {} -i {}'.format(self.config_file,
-                                                                        model,
-                                                                        self.output_dir,
-                                                                        self.exclude_index))
+      analysis = run_analysis.RunAnalysis(config_file=self.config_file,
+                                          model=model,
+                                          output_dir=self.output_dir,
+                                          exclude_index=self.exclude_index)
+      analysis.initialize()
+      analysis.run_model()
 
 ##################################################################
 if __name__ == '__main__':
@@ -70,7 +67,7 @@ if __name__ == '__main__':
                         default='./STATGallery')
     parser.add_argument('-c', '--configFile', action='store',
                         type=str, metavar='configFile',
-                        default='analysis_config-2.0.yaml',
+                        default='analysis_config_QM.yaml',
                         help='Path of config file')
     parser.add_argument('-i', '--excludeIndex', action='store',
                         type=int, metavar='excludeIndex',

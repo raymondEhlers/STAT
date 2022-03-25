@@ -15,6 +15,7 @@ import sys
 import pickle
 import yaml
 import subprocess
+from collections import defaultdict
 
 import reader
 
@@ -61,6 +62,7 @@ class RunAnalysisBase():
       
     # Get model parameters
     model_dict = config['models'][self.model]
+    self.input_dir = model_dict['input_dir']
     self.alpha = model_dict['alpha']
     self.Names = [r'{}'.format(s) for s in model_dict['parameter_names']]
     if 'parameter_names_untransformed' in model_dict:
@@ -138,9 +140,9 @@ class RunAnalysisBase():
             os.makedirs(self.plot_dir)
         
         self.AllData = {}
-        self.RawDesign = reader.ReadDesign(os.path.join(self.workdir,'Design.dat'))
-        self.AllData["design"] = self.RawDesign["Design"]
-        self.AllData["labels"] = self.RawDesign["Parameter"]
+        self.RawData['Design'] = reader.ReadDesign(os.path.join(self.workdir,'Design.dat'))
+        self.AllData["design"] = self.RawData['Design']['Design']
+        self.AllData["labels"] = self.RawData['Design']['Parameter']
         self.plot_design()
     
     else:
@@ -225,8 +227,8 @@ class RunAnalysisBase():
 
     # Basic information
     self.AllData["systems"] = ["AuAu200", "PbPb2760", "PbPb5020"]
-    self.AllData["keys"] = self.RawDesign["Parameter"]
-    self.AllData["labels"] = self.RawDesign["Parameter"]
+    self.AllData["keys"] = self.RawData['Design']['Parameter']
+    self.AllData["labels"] = self.RawData['Design']['Parameter']
     self.AllData["ranges"] = self.ranges
     self.AllData["observables"] = [('R_AA', ['C0', 'C1'])]
 
@@ -235,31 +237,34 @@ class RunAnalysisBase():
       self.exclude_holdout(exclude_index)
 
     # Data points
-    self.Data = {"AuAu200": {"R_AA": {"C0": self.RawData1["Data"], "C1": self.RawData2["Data"]}},
-        "PbPb2760": {"R_AA": {"C0": self.RawData3["Data"], "C1": self.RawData4["Data"]}},
-        "PbPb5020": {"R_AA": {"C0": self.RawData5["Data"], "C1": self.RawData6["Data"]}}}
+    self.Data = self.recursive_defaultdict()
+    for system in self.RawData['Data'].keys():
+      for observable in self.RawData['Data'][system].keys():
+        for centrality in self.RawData['Data'][system][observable].keys():
+          self.Data['Prediction'][system][observable][centrality] = self.RawData['Data'][system][observable][centrality]['Data']
 
     # Model predictions
-    self.Prediction = {"AuAu200": {"R_AA": {"C0": {"Y": self.RawPrediction1["Prediction"], "x": self.RawData1["Data"]['x']},
-                                       "C1": {"Y": self.RawPrediction2["Prediction"], "x": self.RawData2["Data"]['x']}}},
-                 "PbPb2760": {"R_AA": {"C0": {"Y": self.RawPrediction3["Prediction"], "x": self.RawData3["Data"]['x']},
-                                       "C1": {"Y": self.RawPrediction4["Prediction"], "x": self.RawData4["Data"]['x']}}},
-                 "PbPb5020": {"R_AA": {"C0": {"Y": self.RawPrediction5["Prediction"], "x": self.RawData5["Data"]['x']},
-                                       "C1": {"Y": self.RawPrediction6["Prediction"], "x": self.RawData6["Data"]['x']}}}}
+    self.Prediction = self.recursive_defaultdict()
+    for system in self.RawData['Prediction'].keys():
+      for observable in self.RawData['Prediction'][system].keys():
+        for centrality in self.RawData['Prediction'][system][observable].keys():
+          self.Prediction['Prediction'][system][observable][centrality]['Y'] = self.RawData['Prediction'][system][observable][centrality]['Prediction']
+          self.Prediction['Prediction'][system][observable][centrality]['x'] = self.RawData['Data'][system][observable][centrality]['Data']
 
     # Covariance matrices - the indices are [system][measurement1][measurement2], each one is a block of matrix
     SysLength = {"sys,lumi,high": 9999, "sys,TAA,high": 9999, "default": 0.2}
-    self.Covariance = reader.InitializeCovariance(self.Data)
+    self.Covariance = reader.InitializeCovariance(self.RawData['Data'])
     
     # Diagonal terms
-    self.Covariance["AuAu200"][("R_AA", "C0")][("R_AA", "C0")]  = reader.EstimateCovariance(self.RawData1, self.RawData1, SysLength=SysLength)
-    self.Covariance["AuAu200"][("R_AA", "C1")][("R_AA", "C1")]  = reader.EstimateCovariance(self.RawData2, self.RawData2, SysLength=SysLength)
-    self.Covariance["PbPb2760"][("R_AA", "C0")][("R_AA", "C0")] = reader.EstimateCovariance(self.RawData3, self.RawData3, SysLength=SysLength)
-    self.Covariance["PbPb2760"][("R_AA", "C1")][("R_AA", "C1")] = reader.EstimateCovariance(self.RawData4, self.RawData4, SysLength=SysLength)
-    self.Covariance["PbPb5020"][("R_AA", "C0")][("R_AA", "C0")] = reader.EstimateCovariance(self.RawData5, self.RawData5, SysLength=SysLength)
-    self.Covariance["PbPb5020"][("R_AA", "C1")][("R_AA", "C1")] = reader.EstimateCovariance(self.RawData6, self.RawData6, SysLength=SysLength)
-    
-    # Off-diagonal terms
+    self.Covariance = self.recursive_defaultdict()
+    for system in self.RawData['Data'].keys():
+      for observable in self.RawData['Data'][system].keys():
+        for centrality in self.RawData['Data'][system][observable].keys():
+          self.Covariance[system][(observable, centrality)][(observable, centrality)] = reader.EstimateCovariance(self.RawData['Data'][system][observable][centrality], 
+                                                                                                                  self.RawData['Data'][system][observable][centrality], 
+                                                                                                                  SysLength=SysLength)
+
+    # TODO: Off-diagonal terms
     self.Covariance["AuAu200"][("R_AA", "C0")][("R_AA", "C1")]  = reader.EstimateCovariance(self.RawData1, self.RawData2, SysLength = {"sys,lumi,high": 9999, "default": -1}, SysStrength = {"sys,lumi,high": 1, "default": 0})
     self.Covariance["AuAu200"][("R_AA", "C1")][("R_AA", "C0")]  = reader.EstimateCovariance(self.RawData2, self.RawData1, SysLength = {"sys,lumi,high": 9999, "default": -1}, SysStrength = {"sys,lumi,high": 1, "default": 0})
     self.Covariance["PbPb2760"][("R_AA", "C0")][("R_AA", "C1")] = reader.EstimateCovariance(self.RawData3, self.RawData4, SysLength = {"sys,lumi,high": 9999, "default": -1}, SysStrength = {"sys,lumi,high": 1, "default": 0})
@@ -277,9 +282,10 @@ class RunAnalysisBase():
     #Covariance["PbPb5020"][("R_AA", "C1")][("R_AA", "C1")] = RawCov66E["Matrix"]
 
     # Assign data to the dictionary
-    self.AllData["design"] = self.RawDesign["Design"]
+    self.RawData['Design'][system][observable][centrality]
+    self.AllData["design"] = self.RawData['Design']['Design']
     self.AllData["model"] = self.Prediction
-    self.AllData["data"] = self.Data
+    self.AllData["data"] = self.RawData['Data']
     self.AllData["cov"] = self.Covariance
     
     # Save to the desired pickle file
@@ -321,130 +327,78 @@ class RunAnalysisBase():
   def exclude_holdout(self, exclude_index = None):
 
     # Store the holdout point design and prediction
-    HoldoutDesign = self.RawDesign['Design'][exclude_index]
-    HoldoutPrediction1 = self.RawPrediction1['Prediction'][exclude_index]
-    HoldoutPrediction2 = self.RawPrediction2['Prediction'][exclude_index]
-    HoldoutPrediction3 = self.RawPrediction3['Prediction'][exclude_index]
-    HoldoutPrediction4 = self.RawPrediction4['Prediction'][exclude_index]
-    HoldoutPrediction5 = self.RawPrediction5['Prediction'][exclude_index]
-    HoldoutPrediction6 = self.RawPrediction6['Prediction'][exclude_index]
+    HoldoutDesign = self.RawData['Design']['Design'][exclude_index]
     
     # Model predictions
-    HoldoutPrediction = {"AuAu200": {"R_AA": {"C0": {"Y": HoldoutPrediction1, "x": self.RawData1["Data"]['x']},
-                                       "C1": {"Y": HoldoutPrediction2, "x": self.RawData2["Data"]['x']}}},
-                 "PbPb2760": {"R_AA": {"C0": {"Y": HoldoutPrediction3, "x": self.RawData3["Data"]['x']},
-                                       "C1": {"Y": HoldoutPrediction4, "x": self.RawData4["Data"]['x']}}},
-                 "PbPb5020": {"R_AA": {"C0": {"Y": HoldoutPrediction5, "x": self.RawData5["Data"]['x']},
-                                       "C1": {"Y": HoldoutPrediction6, "x": self.RawData6["Data"]['x']}}}}
+    HoldoutPrediction = self.recursive_defaultdict()
+    for system in self.RawData['Data'].keys():
+      for observable in self.RawData['Data'][system].keys():
+        for centrality in self.RawData['Data'][system][observable].keys():
+          HoldoutPrediction[system][observable][centrality]['Y'] = self.RawData['Prediction'][system][observable][centrality]['Prediction'][exclude_index]
+          HoldoutPrediction[system][observable][centrality]['x'] = self.RawData['Data'][system][observable][centrality]['Data']['x']
      
     # Store the holdout point in the dictionary
     self.AllData['holdout_design'] = HoldoutDesign
     self.AllData['holdout_model'] = HoldoutPrediction
     
     # Remove the holdout point from the design
-    self.RawDesign['Design'] = np.delete(self.RawDesign['Design'], exclude_index, axis = 0)
+    self.RawData['Design']['Design'] = np.delete(self.RawData['Design']['Design'], exclude_index, axis = 0)
 
     # Remove the holdout point from the prediction
-    self.RawPrediction1['Prediction'] = np.delete(self.RawPrediction1['Prediction'], exclude_index, axis=0)
-    self.RawPrediction2['Prediction'] = np.delete(self.RawPrediction2['Prediction'], exclude_index, axis=0)
-    self.RawPrediction3['Prediction'] = np.delete(self.RawPrediction3['Prediction'], exclude_index, axis=0)
-    self.RawPrediction4['Prediction'] = np.delete(self.RawPrediction4['Prediction'], exclude_index, axis=0)
-    self.RawPrediction5['Prediction'] = np.delete(self.RawPrediction5['Prediction'], exclude_index, axis=0)
-    self.RawPrediction6['Prediction'] = np.delete(self.RawPrediction6['Prediction'], exclude_index, axis=0)
+    for system in self.RawData['Data'].keys():
+      for observable in self.RawData['Data'][system].keys():
+        for centrality in self.RawData['Data'][system][observable].keys():
+          self.RawData['Prediction'][system][observable][centrality]['Prediction'] = np.delete(self.RawData['Prediction'][system][observable][centrality]['Prediction'], exclude_index, axis=0)
     
     # For closure test: set the data to be equal to the held-out point
-    self.RawData1["Data"]["y"] = HoldoutPrediction1
-    self.RawData2["Data"]["y"] = HoldoutPrediction2
-    self.RawData3["Data"]["y"] = HoldoutPrediction3
-    self.RawData4["Data"]["y"] = HoldoutPrediction4
-    self.RawData5["Data"]["y"] = HoldoutPrediction5
-    self.RawData6["Data"]["y"] = HoldoutPrediction6
+    for system in self.RawData['Data'].keys():
+      for observable in self.RawData['Data'][system].keys():
+        for centrality in self.RawData['Data'][system][observable].keys():
+          self.RawData['Data'][system][observable][centrality]['Data']['y'] = self.RawData['Prediction'][system][observable][centrality]['Prediction'][exclude_index]
 
   #---------------------------------------------------------------
   # Initialize data
   #---------------------------------------------------------------
   def init_files(self):
   
-    # Read data files
-    if self.model == 'MATTER':
-      self.RawData1   = reader.ReadData('input/MATTERTruncated/Data_PHENIX_AuAu200_RAACharged_0to10_2013.dat')
-      self.RawData2   = reader.ReadData('input/MATTERTruncated/Data_PHENIX_AuAu200_RAACharged_40to50_2013.dat')
-      self.RawData3   = reader.ReadData('input/MATTERTruncated/Data_ATLAS_PbPb2760_RAACharged_0to5_2015.dat')
-      self.RawData4   = reader.ReadData('input/MATTERTruncated/Data_ATLAS_PbPb2760_RAACharged_30to40_2015.dat')
-      self.RawData5   = reader.ReadData('input/MATTERTruncated/Data_CMS_PbPb5020_RAACharged_0to10_2017.dat')
-      self.RawData6   = reader.ReadData('input/MATTERTruncated/Data_CMS_PbPb5020_RAACharged_30to50_2017.dat')
-    elif self.model == 'LBT':
-      self.RawData1   = reader.ReadData('input/LBT/Data_PHENIX_AuAu200_RAACharged_0to10_2013.dat')
-      self.RawData2   = reader.ReadData('input/LBT/Data_PHENIX_AuAu200_RAACharged_40to50_2013.dat')
-      self.RawData3   = reader.ReadData('input/LBT/Data_ATLAS_PbPb2760_RAACharged_0to5_2015.dat')
-      self.RawData4   = reader.ReadData('input/LBT/Data_ATLAS_PbPb2760_RAACharged_30to40_2015.dat')
-      self.RawData5   = reader.ReadData('input/LBT/Data_CMS_PbPb5020_RAACharged_0to10_2017.dat')
-      self.RawData6   = reader.ReadData('input/LBT/Data_CMS_PbPb5020_RAACharged_30to50_2017.dat')
-    elif self.model == 'MATTER+LBT1':
-      self.RawData1 = reader.ReadData('input/MATTERLBT1/Data_PHENIX_AuAu200_RAACharged_0to10_2013.dat')
-      self.RawData2 = reader.ReadData('input/MATTERLBT1/Data_PHENIX_AuAu200_RAACharged_40to50_2013.dat')
-      self.RawData3 = reader.ReadData('input/MATTERLBT1/Data_ATLAS_PbPb2760_RAACharged_0to5_2015.dat')
-      self.RawData4 = reader.ReadData('input/MATTERLBT1/Data_ATLAS_PbPb2760_RAACharged_30to40_2015.dat')
-      self.RawData5 = reader.ReadData('input/MATTERLBT1/Data_CMS_PbPb5020_RAACharged_0to10_2017.dat')
-      self.RawData6 = reader.ReadData('input/MATTERLBT1/Data_CMS_PbPb5020_RAACharged_30to50_2017.dat')
-    elif self.model == 'MATTER+LBT2':
-      self.RawData1 = reader.ReadData('input/MATTERLBT2/Data_PHENIX_AuAu200_RAACharged_0to10_2013.dat')
-      self.RawData2 = reader.ReadData('input/MATTERLBT2/Data_PHENIX_AuAu200_RAACharged_40to50_2013.dat')
-      self.RawData3 = reader.ReadData('input/MATTERLBT2/Data_ATLAS_PbPb2760_RAACharged_0to5_2015.dat')
-      self.RawData4 = reader.ReadData('input/MATTERLBT2/Data_ATLAS_PbPb2760_RAACharged_30to40_2015.dat')
-      self.RawData5 = reader.ReadData('input/MATTERLBT2/Data_CMS_PbPb5020_RAACharged_0to10_2017.dat')
-      self.RawData6 = reader.ReadData('input/MATTERLBT2/Data_CMS_PbPb5020_RAACharged_30to50_2017.dat')
-    else:
-      sys.exit('Unknown model {}! Options are: MATTER, LBT, MATTER+LBT1, MATTER+LBT2'.format(self.model))
+    self.RawData = self.recursive_defaultdict()
 
-    # Read covariance
-    self.RawCov11L = reader.ReadCovariance('input/LBT/Covariance_PHENIX_AuAu200_RAACharged_0to10_2013_PHENIX_AuAu200_RAACharged_0to10_2013_Jake.dat')
-    self.RawCov22L = reader.ReadCovariance('input/LBT/Covariance_PHENIX_AuAu200_RAACharged_40to50_2013_PHENIX_AuAu200_RAACharged_40to50_2013_Jake.dat')
-    self.RawCov33L = reader.ReadCovariance('input/LBT/Covariance_ATLAS_PbPb2760_RAACharged_0to5_2015_ATLAS_PbPb2760_RAACharged_0to5_2015_Jake.dat')
-    self.RawCov44L = reader.ReadCovariance('input/LBT/Covariance_ATLAS_PbPb2760_RAACharged_30to40_2015_ATLAS_PbPb2760_RAACharged_30to40_2015_Jake.dat')
-    self.RawCov55L = reader.ReadCovariance('input/LBT/Covariance_CMS_PbPb5020_RAACharged_0to10_2017_CMS_PbPb5020_RAACharged_0to10_2017_Jake.dat')
-    self.RawCov66L = reader.ReadCovariance('input/LBT/Covariance_CMS_PbPb5020_RAACharged_30to50_2017_CMS_PbPb5020_RAACharged_30to50_2017_Jake.dat')
+    # Read txt files of experimental data, covariance matrices, design points, and predictions
+    for input_file in os.listdir(self.input_dir):
+      system, observable, centrality = self.filename_to_labels(input_file)
 
-    # Read design points
-    if self.model == 'MATTER':
-      self.RawDesign = reader.ReadDesign('input/MATTERTruncated/Design.dat')
-    elif self.model == 'LBT':
-      self.RawDesign = reader.ReadDesign('input/LBT/Design.dat')
-    elif self.model == 'MATTER+LBT1':
-      self.RawDesign = reader.ReadDesign('input/MATTERLBT1/Design.dat')
-    elif self.model == 'MATTER+LBT2':
-      self.RawDesign= reader.ReadDesign('input/MATTERLBT2/Design.dat')
+      if 'Data' in input_file:
+        self.RawData['Data'][system][observable][centrality] = reader.ReadData(os.path.join(self.input_dir, input_file))
+      elif 'Covariance' in input_file:
+        self.RawData['RawCov1L'][system][observable][centrality] = reader.ReadCovariance(os.path.join(self.input_dir, input_file))
+      elif 'Design' in input_file:
+        self.RawData['Design'][system][observable][centrality] = reader.ReadDesign(os.path.join(self.input_dir, input_file))
+      elif 'Prediction' in input_file:
+        self.RawData['Prediction'][system][observable][centrality] = reader.ReadPrediction(os.path.join(self.input_dir, input_file))
 
-    # Read model prediction
-    if self.model == 'MATTER':
-      self.RawPrediction1   = reader.ReadPrediction('input/MATTERTruncated/Prediction_PHENIX_AuAu200_RAACharged_0to10_2013.dat')
-      self.RawPrediction2   = reader.ReadPrediction('input/MATTERTruncated/Prediction_PHENIX_AuAu200_RAACharged_40to50_2013.dat')
-      self.RawPrediction3   = reader.ReadPrediction('input/MATTERTruncated/Prediction_ATLAS_PbPb2760_RAACharged_0to5_2015.dat')
-      self.RawPrediction4   = reader.ReadPrediction('input/MATTERTruncated/Prediction_ATLAS_PbPb2760_RAACharged_30to40_2015.dat')
-      self.RawPrediction5   = reader.ReadPrediction('input/MATTERTruncated/Prediction_CMS_PbPb5020_RAACharged_0to10_2017.dat')
-      self.RawPrediction6   = reader.ReadPrediction('input/MATTERTruncated/Prediction_CMS_PbPb5020_RAACharged_30to50_2017.dat')
-    elif self.model == 'LBT':
-      self.RawPrediction1   = reader.ReadPrediction('input/LBT/Prediction_PHENIX_AuAu200_RAACharged_0to10_2013.dat')
-      self.RawPrediction2   = reader.ReadPrediction('input/LBT/Prediction_PHENIX_AuAu200_RAACharged_40to50_2013.dat')
-      self.RawPrediction3   = reader.ReadPrediction('input/LBT/Prediction_ATLAS_PbPb2760_RAACharged_0to5_2015.dat')
-      self.RawPrediction4   = reader.ReadPrediction('input/LBT/Prediction_ATLAS_PbPb2760_RAACharged_30to40_2015.dat')
-      self.RawPrediction5   = reader.ReadPrediction('input/LBT/Prediction_CMS_PbPb5020_RAACharged_0to10_2017.dat')
-      self.RawPrediction6   = reader.ReadPrediction('input/LBT/Prediction_CMS_PbPb5020_RAACharged_30to50_2017.dat')
-    elif self.model == 'MATTER+LBT1':
-      self.RawPrediction1 = reader.ReadPrediction('input/MATTERLBT1/Prediction_PHENIX_AuAu200_RAACharged_0to10_2013.dat')
-      self.RawPrediction2 = reader.ReadPrediction('input/MATTERLBT1/Prediction_PHENIX_AuAu200_RAACharged_40to50_2013.dat')
-      self.RawPrediction3 = reader.ReadPrediction('input/MATTERLBT1/Prediction_ATLAS_PbPb2760_RAACharged_0to5_2015.dat')
-      self.RawPrediction4 = reader.ReadPrediction('input/MATTERLBT1/Prediction_ATLAS_PbPb2760_RAACharged_30to40_2015.dat')
-      self.RawPrediction5 = reader.ReadPrediction('input/MATTERLBT1/Prediction_CMS_PbPb5020_RAACharged_0to10_2017.dat')
-      self.RawPrediction6 = reader.ReadPrediction('input/MATTERLBT1/Prediction_CMS_PbPb5020_RAACharged_30to50_2017.dat')
-    elif self.model == 'MATTER+LBT2':
-      self.RawPrediction1 = reader.ReadPrediction('input/MATTERLBT2/Prediction_PHENIX_AuAu200_RAACharged_0to10_2013.dat')
-      self.RawPrediction2 = reader.ReadPrediction('input/MATTERLBT2/Prediction_PHENIX_AuAu200_RAACharged_40to50_2013.dat')
-      self.RawPrediction3 = reader.ReadPrediction('input/MATTERLBT2/Prediction_ATLAS_PbPb2760_RAACharged_0to5_2015.dat')
-      self.RawPrediction4 = reader.ReadPrediction('input/MATTERLBT2/Prediction_ATLAS_PbPb2760_RAACharged_30to40_2015.dat')
-      self.RawPrediction5 = reader.ReadPrediction('input/MATTERLBT2/Prediction_CMS_PbPb5020_RAACharged_0to10_2017.dat')
-      self.RawPrediction6 = reader.ReadPrediction('input/MATTERLBT2/Prediction_CMS_PbPb5020_RAACharged_30to50_2017.dat')
-    
+  #---------------------------------------------------------------
+  # Initialize data
+  #---------------------------------------------------------------
+  def filename_to_labels(self, filename):
+
+    items = filename[:-4].split('_')
+  
+    system = items[2]
+    centrality = items[-1]
+
+    if 'hadron' in filename:
+      observable = f'{items[1]}_{items[3]}_{items[4]}_{items[5]}'
+    elif 'jet' in filename:
+      observable = f'{items[1]}_{items[3]}_{items[4]}_{items[5]}_{items[6]}'
+
+    return system, observable, centrality
+
+  #---------------------------------------------------------------
+  # Create a nested defaultdict
+  #---------------------------------------------------------------
+  def recursive_defaultdict(self):
+    return defaultdict(self.recursive_defaultdict)
+
   #---------------------------------------------------------------
   # Return formatted string of class members
   #---------------------------------------------------------------
