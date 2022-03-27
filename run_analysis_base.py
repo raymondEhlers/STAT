@@ -487,7 +487,7 @@ class RunAnalysisBase():
         # Handle design points.
         parametrization_type = str(input_file.name).split("_")[1]
         # Only store design points that we are interested in processing.
-        if parametrization_type != self.parametrization_type:
+        if parametrization_type == self.parametrization_type:
           self.RawData["Design"][parametrization_type] = reader.ReadDesign(input_file)
       else:
         system, observable, centrality = self.filename_to_labels(input_file.name)
@@ -523,16 +523,17 @@ class RunAnalysisBase():
 
     system = items[2]
     # HACK: Remove the parametrization type from the system name.
-    system.replace(self.parametrization_type, "")
+    system = system.replace(self.parametrization_type, "")
 
-    centrality = items[-1]
+    centrality_index = -2 if "Data" in filename else -1
+    centrality = items[centrality_index]
     # HACK: Normalize the names of the Predictions (which use "to") and the Data, which uses "-".
     # "=" is arbitrarily selected as the convention.
     if "to" in centrality:
-      centrality.replace("to", "-")
+      centrality = centrality.replace("to", "-")
 
     # HACK: Normalize experiment name to upper case
-    items[1] = items[1].capitalize()
+    items[1] = items[1].upper()
 
     if 'hadron' in filename:
       # HACK: Rename pt -> RAA in Prediction name, since this is actually what we're looking at
