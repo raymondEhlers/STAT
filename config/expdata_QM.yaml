@@ -47,7 +47,7 @@ hepdata_phx_hadronRAA:
     {name: '$p_T$', value: '$30-40\%$ centrality'},
     {name: '$p_T$', value: '$40-50\%$ centrality'},
   ]
-  data_meas: ['RAACharged','RAACharged','RAACharged','RAACharged', "RAACharged", "RAACharged"]
+  data_meas: ['hadron_RAA_pi0','hadron_RAA_pi0','hadron_RAA_pi0','hadron_RAA_pi0', "hadron_RAA_pi0", "hadron_RAA_pi0"]
   data_cent: ['0-5', '0-10', '10-20', '20-30', '30-40', '40-50']
   data_year: ['2013','2013','2013','2013', "2013", "2013"]
 
@@ -61,7 +61,7 @@ hepdata_hadronRAA_CMS_ATLAS:
   data_fig: ['figure 4a','figure 4b','figure 13','figure 13']
   data_exp: ['CMS','CMS','ATLAS','ATLAS']
   data_sys: ['PbPb5020','PbPb5020','PbPb2760','PbPb2760']
-  data_meas: ['RAACharged','RAACharged','RAACharged','RAACharged']
+  data_meas: ['hadron_RAA_ch','hadron_RAA_ch','hadron_RAA_ch','hadron_RAA_ch']
   data_cent: ['0-10','30-50','0-5','30-50']
   data_year: ['2017','2017','2015','2015']
 
@@ -86,7 +86,7 @@ hepdata_STAR_JetRAA_200:
     {name: '$p_{T,jet}^{ch}$ $(\mathrm{GeV}/c)$', value: '$R=0.3$'},
     {name: '$p_{T,jet}^{ch}$ $(\mathrm{GeV}/c)$', value: '$R=0.4$'}
   ]
-  data_meas: ['JetRAAR02', 'JetRAAR03', 'JetRAAR04']
+  data_meas: ['inclusive_chjet_RAA_R02', 'inclusive_chjet_RAA_R03', 'inclusive_chjet_RAA_R04']
   data_cent: ['0-10', '0-10', '0-10']
   data_year: ['2011', '2011', '2011']
 
@@ -101,7 +101,7 @@ hepdata_ALICE_JetRAA_2760:
   data_fig: ['figure 5, left', 'figure 5, right']
   data_exp: ['ALICE', 'ALICE']
   data_sys: ['PbPb2760', 'PbPb2760']
-  data_meas: ['JetRAAR02', 'JetRAAR02']
+  data_meas: ['inclusive_jet_RAA_R02', 'inclusive_jet_RAA_R02']
   data_cent: ['0-10', '10-30']
   data_year: ['2011', '2011']
 
@@ -128,7 +128,7 @@ hepdata_ATLAS_JetRAA_2760:
   data_fig: ["Figure 3, top", "Figure 3, top", "Figure 3, top", "Figure 3, top", "Figure 3, top"]
   data_exp: ['ATLAS', 'ATLAS', 'ATLAS', 'ATLAS', 'ATLAS']
   data_sys: ['PbPb2760', 'PbPb2760', 'PbPb2760', 'PbPb2760', 'PbPb2760']
-  data_meas: ['JetRAAR04', 'JetRAAR04', 'JetRAAR04', 'JetRAAR04', 'JetRAAR04']
+  data_meas: ["inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04"]
   data_cent: ['0-10', '10-20', '20-30', "30-40", "40-50"]
   data_year: ['2011', '2011', "2011", "2011", "2011"]
 
@@ -184,13 +184,13 @@ hepdata_CMS_JetRAA_2760:
   ]
   data_meas: [
     # 0-5%
-    'JetRAAR02', 'JetRAAR03', 'JetRAAR04',
+    "inclusive_jet_RAA_R02", "inclusive_jet_RAA_R03", "inclusive_jet_RAA_R04",
     # 5-10%
-    'JetRAAR02', 'JetRAAR03', 'JetRAAR04',
+    "inclusive_jet_RAA_R02", "inclusive_jet_RAA_R03", "inclusive_jet_RAA_R04",
     # 10-30%
-    'JetRAAR02', 'JetRAAR03', 'JetRAAR04',
+    "inclusive_jet_RAA_R02", "inclusive_jet_RAA_R03", "inclusive_jet_RAA_R04",
     # 30-50%
-    'JetRAAR02', 'JetRAAR03', 'JetRAAR04',
+    "inclusive_jet_RAA_R02", "inclusive_jet_RAA_R03", "inclusive_jet_RAA_R04",
   ]
   data_cent: [
     "0-5", "0-5", "0-5",
@@ -216,7 +216,7 @@ hepdata_ALICE_JetRAA_5020:
   data_fig: ['figure 6a', 'figure 6b']
   data_exp: ['ALICE', 'ALICE']
   data_sys: ['PbPb5020', 'PbPb5020']
-  data_meas: ['JetRAAR02', 'JetRAAR04']
+  data_meas: ["inclusive_jet_RAA_R02", "inclusive_jet_RAA_R04"]
   data_cent: ['0-10', '0-10']
   data_year: ['2015', '2015']
 
@@ -235,7 +235,7 @@ hepdata_ATLAS_JetRAA_5020:
   data_fig: ['figure 4', 'figure 4', 'figure 4', 'figure 4', "figure 4"]
   data_exp: ['ATLAS', "ATLAS", 'ATLAS', "ATLAS", 'ATLAS']
   data_sys: ['PbPb5020', 'PbPb5020', 'PbPb5020', 'PbPb5020', 'PbPb5020']
-  data_meas: ['JetRAAR04', 'JetRAAR04', 'JetRAAR04', 'JetRAAR04', 'JetRAAR04']
+  data_meas: ["inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04"]
   data_cent: ['0-10', '10-20', "20-30", "30-40", "40-50"]
   data_year: ['2015', '2015', '2015', '2015', '2015']
 
@@ -331,17 +331,17 @@ hepdata_CMS_JetRAA_5020:
   ]
   data_meas: [
     # R02
-    'JetRAAR02', 'JetRAAR02', 'JetRAAR02',
+    "inclusive_jet_RAA_R02", "inclusive_jet_RAA_R02", "inclusive_jet_RAA_R02",
     # R03
-    'JetRAAR03', 'JetRAAR03', 'JetRAAR03',
+    "inclusive_jet_RAA_R03", "inclusive_jet_RAA_R03", "inclusive_jet_RAA_R03",
     # R04
-    'JetRAAR04', 'JetRAAR04', 'JetRAAR04',
+    "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04",
     # R06
-    'JetRAAR06', 'JetRAAR06', 'JetRAAR06',
+    "inclusive_jet_RAA_R06", "inclusive_jet_RAA_R06", "inclusive_jet_RAA_R06",
     # R08
-    'JetRAAR08', 'JetRAAR08', 'JetRAAR08',
+    "inclusive_jet_RAA_R08", "inclusive_jet_RAA_R08", "inclusive_jet_RAA_R08",
     # R10
-    'JetRAAR10', 'JetRAAR10', 'JetRAAR10',
+    "inclusive_jet_RAA_R10", "inclusive_jet_RAA_R10", "inclusive_jet_RAA_R10",
   ]
   data_cent: [
     # R02
