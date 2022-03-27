@@ -3,6 +3,13 @@ Base class to steer Bayesian analysis and produce plots.
 '''
 
 import enum
+import os
+import pickle
+import subprocess
+import sys
+from collections import defaultdict
+from pathlib import Path
+
 import matplotlib as mpl
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
@@ -10,13 +17,7 @@ import seaborn as sns
 import numpy as np
 import pandas as pd
 import scipy
-
-import os
-import sys
-import pickle
 import yaml
-import subprocess
-from collections import defaultdict
 
 import reader
 
@@ -154,6 +155,7 @@ class RunAnalysisBase():
         self.Names_untransformed = [r'{}'.format(s) for s in model_dict['parameter_names_untransformed']]
     else:
         self.Names_untransformed = self.Names
+    self.parametrization_type = model_dict["parametrization_type"]
 
     min = model_dict['min']
     max = model_dict['max']
@@ -474,32 +476,76 @@ class RunAnalysisBase():
 
     self.RawData = self.recursive_defaultdict()
 
-    # Read txt files of experimental data, covariance matrices, design points, and predictions
-    for input_file in os.listdir(self.input_dir):
-      system, observable, centrality = self.filename_to_labels(input_file)
+    #design_input_files = Path(self.input_dir).glob("Design*")
+    #for input_file in design_input_files:
+    #  parametrization_type = str(input_file.name).split("_")[1]
+    #  self.RawData["Design"][parametrization_type] = reader.ReadDesign(input_file)
 
-      if 'Data' in input_file:
-        self.RawData['Data'][system][observable][centrality] = reader.ReadData(os.path.join(self.input_dir, input_file))
-      elif 'Covariance' in input_file:
-        self.RawData['RawCov1L'][system][observable][centrality] = reader.ReadCovariance(os.path.join(self.input_dir, input_file))
-      elif 'Design' in input_file:
-        self.RawData['Design'][system][observable][centrality] = reader.ReadDesign(os.path.join(self.input_dir, input_file))
-      elif 'Prediction' in input_file:
-        self.RawData['Prediction'][system][observable][centrality] = reader.ReadPrediction(os.path.join(self.input_dir, input_file))
+    # Read txt files of experimental data, covariance matrices, design points, and predictions
+    for input_file in sorted(Path(self.input_dir).glob("*.dat")):
+      if "Design" in input_file.name:
+        # Handle design points.
+        parametrization_type = str(input_file.name).split("_")[1]
+        # Only store design points that we are interested in processing.
+        if parametrization_type != self.parametrization_type:
+          self.RawData["Design"][parametrization_type] = reader.ReadDesign(input_file)
+      else:
+        system, observable, centrality = self.filename_to_labels(input_file.name)
+
+        if 'Data' in input_file.name:
+          result = reader.ReadData(input_file)
+          # If the parametrization type is stored in the system, we would need to duplicate the data here.
+          # However, we won't do this for our first pass, so it's not necessary
+          # Store a copy of the data for each parametrization
+          #for parametrization_type in self.parametrization_types:
+          #  _system = f"{system}{parametrization_type}"
+          #  self.RawData['Data'][_system][observable][centrality] = result
+          self.RawData['Data'][system][observable][centrality] = result
+        elif 'Covariance' in input_file.name:
+          self.RawData['RawCov1L'][system][observable][centrality] = reader.ReadCovariance(input_file)
+        elif 'Prediction' in input_file.name:
+          # Only store if the prediction is relevant for the parametrization type which we're using
+          if parametrization_type in input_file.name:
+            self.RawData['Prediction'][system][observable][centrality] = reader.ReadPrediction(input_file)
 
   #---------------------------------------------------------------
   # Initialize data
   #---------------------------------------------------------------
   def filename_to_labels(self, filename):
+    """Convert filename to label
+
+    Note:
+      Each convention that's labeled "HACK" can be resolved by standardizing the names
+      between the predictions and the data. However, this is simplest for now (RJE, March 2022).
+    """
 
     items = filename[:-4].split('_')
 
     system = items[2]
+    # HACK: Remove the parametrization type from the system name.
+    system.replace(self.parametrization_type, "")
+
     centrality = items[-1]
+    # HACK: Normalize the names of the Predictions (which use "to") and the Data, which uses "-".
+    # "=" is arbitrarily selected as the convention.
+    if "to" in centrality:
+      centrality.replace("to", "-")
+
+    # HACK: Normalize experiment name to upper case
+    items[1] = items[1].capitalize()
 
     if 'hadron' in filename:
+      # HACK: Rename pt -> RAA in Prediction name, since this is actually what we're looking at
+      if items[4] == "pt":
+        items[4] = "RAA"
       observable = f'{items[1]}_{items[3]}_{items[4]}_{items[5]}'
     elif 'jet' in filename:
+      # HACK: Rename pt -> RAA in Prediction name, since this is actually what we're looking at
+      if items[5] == "pt":
+        items[5] = "RAA"
+      # HACK: Rename R0.3 -> R03 for consistency.
+      if "R" in items[6] and "." in items[6]:
+        items[6] = items[6].replace(".", "")
       observable = f'{items[1]}_{items[3]}_{items[4]}_{items[5]}_{items[6]}'
 
     return system, observable, centrality
