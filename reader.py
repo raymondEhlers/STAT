@@ -66,9 +66,9 @@ def ReadData(FileName):
         raise AssertionError('Bad file version number while reading design points')
 
     XMode = ''
-    if(Result["Label"][0:4] == ['x', 'y', 'stat,low', 'stat,high']):
+    if Result["Label"][0:4] == ['x', 'y', 'stat,low', 'stat,high']:
         XMode = 'x'
-    elif(Result["Label"][0:5] == ['xmin', 'xmax', 'y', 'stat,low', 'stat,high']):
+    elif Result["Label"][0:5] == ['xmin', 'xmax', 'y', 'stat,low', 'stat,high']:
         XMode = 'xminmax'
     else:
         raise AssertionError('Invalid list of initial columns!  Should be ("x", "y", "stat,low", "stat,high"), or ("xmin", "xmax", "y", "stat,low", "stat,high")')
@@ -85,6 +85,11 @@ def ReadData(FileName):
         Result["Data"]["yerr"]["sys"] = RawData[:, 4:]
         Result["SysLabel"] = Result["Label"][4:]
     elif(XMode == 'xminmax'):
+        # If we only have one row of data (eg. CMS Jet RAA, R = 1.0), we need to promote the array
+        # from being treated as 1D to being treated as 2D with one row.
+        if RawData.ndim == 1:
+            RawData = RawData[np.newaxis, :]
+
         Result["Data"]["x"] = (RawData[:, 0] + RawData[:, 1]) / 2
         Result["Data"]["xerr"] = (RawData[:, 1] - RawData[:, 0]) / 2
         Result["Data"]["y"] = RawData[:, 2]
