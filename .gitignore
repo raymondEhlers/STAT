@@ -8,4 +8,7 @@
 *Answer*
 *walkthrough*
 plots/
+venv/
+env/
+.venv/
 
