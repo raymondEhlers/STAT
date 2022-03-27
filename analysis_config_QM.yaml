@@ -4,7 +4,9 @@ debug_level: 0
 # Specify model
 models:
   MATTER_LBT_QM_exponential:
-    input_dir: "/rstorage/jetscape/STAT-Bayesian/Analysis1/tables"
+    parametrization_type: "exponential"
+    #input_dir: "/rstorage/jetscape/STAT-Bayesian/Analysis1/tables"
+    input_dir: "/rstorage/rehlers/jetscape/stat-bayesian-input/MATTER-LBT-QM-Production"
     # Follows the order that they are stored in the design points file
     parameter_names: ["$\\alpha_S^{\\rm{fix}}$", "$Q_0$", "$c_1$", "$c_2$", "$\\tau_0$", "$c_3$"]
     min: [0.1, 1, 0.006737946999085467, 0.006737946999085467, 0, 0.049787068367863944]
