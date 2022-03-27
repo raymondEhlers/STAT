@@ -113,7 +113,28 @@ def get_hepdata(configFileEntry = None):
       if _i_value in _indices_to_skip:
         continue
       if "errors" in _entry:
-        for err in _entry['errors']:
+        # We need the statistical errors to be first, so first we do a search to find the stat errors.
+        _stat_error_index = None
+        for _i_temp, error_entry in enumerate(_entry["errors"]):
+          if "stat" in error_entry["label"]:
+            _stat_error_index = _i_temp
+            break
+        else:
+          print("\tWARNING: Could not find statistical error. Please check the data source!")
+        if _stat_error_index is not None:
+          if _stat_error_index != 0:
+            print("\tINFO: Heads up, we're rearraning the errors so that the statistical errors is first.")
+          _order_to_extract_errors = list(range(len(_entry["errors"])))
+          _order_to_extract_errors.remove(_stat_error_index)
+          # Insert the stat error as the first entry. Usually, this will be index 0
+          _order_to_extract_errors.insert(0, _stat_error_index)
+        else:
+          # We don't have the stat error - just use as is and hope for the best.
+          _order_to_extract_errors = list(range(len(_entry["errors"])))
+
+        all_error_entries = _entry["errors"]
+        for _i_error in _order_to_extract_errors:
+          err = all_error_entries[_i_error]
           error_label += err['label']+',low ' + err['label']+',high '
         # Once we've found one entry, we're done.
         break
@@ -137,7 +158,9 @@ def get_hepdata(configFileEntry = None):
       yval.append(v['value'])
 
       errs.append('')
-      for err in (v['errors']):
+      all_error_entries = v['errors']
+      for _i_error in _order_to_extract_errors:
+        err = all_error_entries[_i_error]
         # print(err['label'])
         try:
           e = str(err['symerror'])
