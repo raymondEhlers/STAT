@@ -361,8 +361,17 @@ class RunAnalysisBase():
     for system in self.RawData['Prediction'].keys():
       for observable in self.RawData['Prediction'][system].keys():
         for centrality in self.RawData['Prediction'][system][observable].keys():
+          # NOTE: If the data and predictions don't match up, we'll end up breaking the covariance calculation due
+          #       to the default dict trying to create the fields. To avoid this, we check for the necessary fields
+          #       before loading the predictions.
+          if system not in self.RawData['Data'] or observable not in self.RawData['Data'][system] or centrality not in self.RawData['Data'][system][observable]:
+            print(f"\tWARNING: Skipping prediction {system}, {observable}, {centrality} due to missing data points")
+            continue
+          #else:
+          #  print(f"Using prediction {system}, {observable}, {centrality} predictions")
+
           self.Prediction['Prediction'][system][observable][centrality]['Y'] = self.RawData['Prediction'][system][observable][centrality]['Prediction']
-          self.Prediction['Prediction'][system][observable][centrality]['x'] = self.RawData['Data'][system][observable][centrality]['Data']
+          self.Prediction['Prediction'][system][observable][centrality]['x'] = self.RawData['Data'][system][observable][centrality]['Data']["x"]
 
     # Covariance matrices - the indices are [system][measurement1][measurement2], each one is a block of matrix
     SysLength = {"sys,lumi,high": 9999, "sys,TAA,high": 9999, "default": 0.2}
