@@ -135,7 +135,9 @@ def get_hepdata(configFileEntry = None):
         all_error_entries = _entry["errors"]
         for _i_error in _order_to_extract_errors:
           err = all_error_entries[_i_error]
-          error_label += err['label']+',low ' + err['label']+',high '
+          # If there are spaces, it will break reading the data later
+          error_label_text = err["label"].replace(" ", "_")
+          error_label += error_label_text + ',low ' + error_label_text + ',high '
         # Once we've found one entry, we're done.
         break
     else:
