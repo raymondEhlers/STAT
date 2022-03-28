@@ -17,15 +17,16 @@ def ReadDesign(FileName):
     Result["FileName"] = FileName
 
     # First read all the header information
-    for Line in open(FileName):
-        Items = Line.split()
-        if (len(Items) < 2): continue
-        if Items[0] != '#': continue
+    with open(FileName, "r") as f:
+        for Line in f:
+            Items = Line.split()
+            if (len(Items) < 2): continue
+            if Items[0] != '#': continue
 
-        if(Items[1] == 'Version'):
-            Version = Items[2]
-        elif(Items[1] == 'Parameter'):
-            Result["Parameter"] = Items[2:]
+            if(Items[1] == 'Version'):
+                Version = Items[2]
+            elif(Items[1] == 'Parameter'):
+                Result["Parameter"] = Items[2:]
 
     if(Version not in ['1.0', '2.0']):
         raise AssertionError('Bad file version number while reading design points')
@@ -42,25 +43,26 @@ def ReadData(FileName):
     Result["FileName"] = FileName
 
     # First read all the header information
-    for Line in open(FileName):
-        Items = Line.split()
-        if (len(Items) < 2): continue
-        if Items[0] != '#': continue
+    with open(FileName, "r") as f:
+        for Line in f:
+            Items = Line.split()
+            if (len(Items) < 2): continue
+            if Items[0] != '#': continue
 
-        if(Items[1] == 'Version'):
-            Version = Items[2]
-        elif(Items[1] == 'DOI'):
-            Result["DOI"] = Items[2:]
-        elif(Items[1] == 'Source'):
-            Result["Source"] = Items[2:]
-        elif(Items[1] == 'System'):
-            Result["System"] = Items[2]
-        elif(Items[1] == 'Centrality'):
-            Result["Centrality"] = Items[2:4]
-        elif(Items[1] == 'XY'):
-            Result["XY"] = Items[2:4]
-        elif(Items[1] == 'Label'):
-            Result["Label"] = Items[2:]
+            if(Items[1] == 'Version'):
+                Version = Items[2]
+            elif(Items[1] == 'DOI'):
+                Result["DOI"] = Items[2:]
+            elif(Items[1] == 'Source'):
+                Result["Source"] = Items[2:]
+            elif(Items[1] == 'System'):
+                Result["System"] = Items[2]
+            elif(Items[1] == 'Centrality'):
+                Result["Centrality"] = Items[2:4]
+            elif(Items[1] == 'XY'):
+                Result["XY"] = Items[2:4]
+            elif(Items[1] == 'Label'):
+                Result["Label"] = Items[2:]
 
     if(Version not in ['1.0', '2.0']):
         raise AssertionError('Bad file version number while reading design points')
@@ -108,17 +110,18 @@ def ReadCovariance(FileName):
     Result["FileName"] = FileName
 
     # First read all the header information
-    for Line in open(FileName):
-        Items = Line.split()
-        if (len(Items) < 2): continue
-        if Items[0] != '#': continue
+    with open(FileName, "r") as f:
+        for Line in f:
+            Items = Line.split()
+            if (len(Items) < 2): continue
+            if Items[0] != '#': continue
 
-        if(Items[1] == 'Version'):
-            Version = Items[2]
-        elif(Items[1] == 'Data1'):
-            Result["Data1"] = Items[2]
-        elif(Items[1] == 'Data2'):
-            Result["Data2"] = Items[2]
+            if(Items[1] == 'Version'):
+                Version = Items[2]
+            elif(Items[1] == 'Data1'):
+                Result["Data1"] = Items[2]
+            elif(Items[1] == 'Data2'):
+                Result["Data2"] = Items[2]
 
     if(Version not in ['1.0', '2.0']):
         raise AssertionError('Bad file version number while reading design points')
@@ -135,17 +138,18 @@ def ReadPrediction(FileName):
     Result["FileName"] = FileName
 
     # First read all the header information
-    for Line in open(FileName):
-        Items = Line.split()
-        if (len(Items) < 2): continue
-        if Items[0] != '#': continue
+    with open(FileName, "r") as f:
+        for Line in f:
+            Items = Line.split()
+            if (len(Items) < 2): continue
+            if Items[0] != '#': continue
 
-        if(Items[1] == 'Version'):
-            Version = Items[2]
-        elif(Items[1] == 'Data'):
-            Result["Data"] = Items[2]
-        elif(Items[1] == 'Design'):
-            Result["Design"] = Items[2]
+            if(Items[1] == 'Version'):
+                Version = Items[2]
+            elif(Items[1] == 'Data'):
+                Result["Data"] = Items[2]
+            elif(Items[1] == 'Design'):
+                Result["Design"] = Items[2]
 
     if(Version not in ['1.0', '2.0']):
         raise AssertionError('Bad file version number while reading design points')
