@@ -343,7 +343,8 @@ class RunAnalysisBase():
     self.AllData["keys"] = self.RawData['Design']['Parameter']
     self.AllData["labels"] = self.RawData['Design']['Parameter']
     self.AllData["ranges"] = self.ranges
-    self.AllData["observables"] = [('R_AA', ['C0', 'C1'])]
+    #self.AllData["observables"] = [('R_AA', ['C0', 'C1'])]
+    # Now set down below
 
     # If a holdout point is passed, exclude it from the design and prediction
     if exclude_index >= 0:
@@ -370,8 +371,18 @@ class RunAnalysisBase():
           #else:
           #  print(f"Using prediction {system}, {observable}, {centrality} predictions")
 
-          self.Prediction['Prediction'][system][observable][centrality]['Y'] = self.RawData['Prediction'][system][observable][centrality]['Prediction']
-          self.Prediction['Prediction'][system][observable][centrality]['x'] = self.RawData['Data'][system][observable][centrality]['Data']["x"]
+          self.Prediction[system][observable][centrality]['Y'] = self.RawData['Prediction'][system][observable][centrality]['Prediction']
+          self.Prediction[system][observable][centrality]['x'] = self.RawData['Data'][system][observable][centrality]['Data']["x"]
+
+    # Determine the set of observables
+    # Only take those where we have both predictions and data available
+    # TODO: I'm not sure this is really the best thing since they're sorted by experiment. I think we need
+    #       to normalize and consolidate them together... TBD
+    self.AllData["observables"] = [
+      (observable, list(self.Prediction[system][observable]))
+      for system in self.Prediction
+      for observable in self.Prediction[system]
+    ]
 
     # Covariance matrices - the indices are [system][measurement1][measurement2], each one is a block of matrix
     SysLength = {"sys,lumi,high": 9999, "sys,TAA,high": 9999, "default": 0.2}
@@ -382,9 +393,11 @@ class RunAnalysisBase():
     for system in self.RawData['Data'].keys():
       for observable in self.RawData['Data'][system].keys():
         for centrality in self.RawData['Data'][system][observable].keys():
-          self.Covariance[system][(observable, centrality)][(observable, centrality)] = reader.EstimateCovariance(self.RawData['Data'][system][observable][centrality],
-                                                                                                                  self.RawData['Data'][system][observable][centrality],
-                                                                                                                  SysLength=SysLength)
+          self.Covariance[system][(observable, centrality)][(observable, centrality)] = reader.EstimateCovariance(
+            self.RawData['Data'][system][observable][centrality],
+            self.RawData['Data'][system][observable][centrality],
+            SysLength=SysLength
+          )
 
     # Off-diagonal terms
     for system in self.RawData['Data'].keys():
