@@ -615,5 +615,8 @@ class RunAnalysisBase():
     s = []
     variables = self.__dict__.keys()
     for v in variables:
+      # Skip especially noisy members
+      if v in ["RawData", "Covariance", "AllData", "Data", "Prediction"]:
+        continue
       s.append('{} = {}'.format(v, self.__dict__[v]))
     return "[i] {} with \n .  {}".format(self.__class__.__name__, '\n .  '.join(s))
