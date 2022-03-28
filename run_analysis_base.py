@@ -386,13 +386,55 @@ class RunAnalysisBase():
                                                                                                                   self.RawData['Data'][system][observable][centrality],
                                                                                                                   SysLength=SysLength)
 
-    # TODO: Off-diagonal terms
-    self.Covariance["AuAu200"][("R_AA", "C0")][("R_AA", "C1")]  = reader.EstimateCovariance(self.RawData1, self.RawData2, SysLength = {"sys,lumi,high": 9999, "default": -1}, SysStrength = {"sys,lumi,high": 1, "default": 0})
-    self.Covariance["AuAu200"][("R_AA", "C1")][("R_AA", "C0")]  = reader.EstimateCovariance(self.RawData2, self.RawData1, SysLength = {"sys,lumi,high": 9999, "default": -1}, SysStrength = {"sys,lumi,high": 1, "default": 0})
-    self.Covariance["PbPb2760"][("R_AA", "C0")][("R_AA", "C1")] = reader.EstimateCovariance(self.RawData3, self.RawData4, SysLength = {"sys,lumi,high": 9999, "default": -1}, SysStrength = {"sys,lumi,high": 1, "default": 0})
-    self.Covariance["PbPb2760"][("R_AA", "C1")][("R_AA", "C0")] = reader.EstimateCovariance(self.RawData4, self.RawData3, SysLength = {"sys,lumi,high": 9999, "default": -1}, SysStrength = {"sys,lumi,high": 1, "default": 0})
-    self.Covariance["PbPb5020"][("R_AA", "C0")][("R_AA", "C1")] = reader.EstimateCovariance(self.RawData5, self.RawData6, SysLength = {"sys,lumi,high": 9999, "default": -1}, SysStrength = {"sys,lumi,high": 1, "default": 0})
-    self.Covariance["PbPb5020"][("R_AA", "C1")][("R_AA", "C0")] = reader.EstimateCovariance(self.RawData6, self.RawData5, SysLength = {"sys,lumi,high": 9999, "default": -1}, SysStrength = {"sys,lumi,high": 1, "default": 0})
+    # Off-diagonal terms
+    for system in self.RawData['Data'].keys():
+      for first_observable in self.RawData['Data'][system].keys():
+        first_centralities = list(self.RawData['Data'][system][first_observable].keys())
+        first_experiment = first_observable.split("_")[0]
+        for second_observable in self.RawData['Data'][system].keys():
+          second_experiment = second_observable.split("_")[0]
+
+          sys_length = {}
+          sys_strength = {}
+
+          #print(f"{system=}, {first_observable=}, {second_observable=}")
+
+          if first_observable == second_observable:
+            # Centrality cross terms for a single observable. Correlate the lumi, but nothing else.
+            #print("Cross centrality for observable")
+            sys_length = {
+              "sys,lumi,high": 9999, "default": -1
+            }
+            sys_strength = {
+              "sys,lumi,high": 1,
+              "default": 0
+            }
+          elif first_experiment == second_experiment:
+            # Experiment cross terms for different observable. Correlate the lumi, but nothing else.
+            #print("Cross experiment")
+            sys_length = {
+              "sys,lumi,high": 9999, "default": -1
+            }
+            sys_strength = {
+              "sys,lumi,high": 1,
+              "default": 0
+            }
+          else:
+            # The experiments aren't the same, so no cross terms.
+            #print("No correlation.")
+            sys_length = {"default": -1}
+            sys_strength = {"default": 0}
+
+          for first_centrality in first_centralities:
+            for second_centrality in self.RawData['Data'][system][second_observable]:
+
+              self.Covariance[system][(first_observable, first_centrality)][(second_observable, second_centrality)] = \
+                reader.EstimateCovariance(
+                  self.RawData['Data'][system][first_observable][first_centrality],
+                  self.RawData['Data'][system][second_observable][second_centrality],
+                  SysLength=sys_length,
+                  SysStrength=sys_strength,
+                )
 
     # This is how we can supply external pre-generated matrices
     # Covariance["AuAu200"][("R_AA", "C0")][("R_AA", "C0")] = RawCov1["Matrix"]
