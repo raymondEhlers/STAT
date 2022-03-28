@@ -206,8 +206,11 @@ def EstimateCovariance(DataX, DataY, SysLength = {}, SysStrength = {}, ScaleX = 
     DX = 1
     DY = 1
     if ScaleX == True:
-        DX = 1 / (max(DataX["Data"]["x"]) - min(DataX["Data"]["x"]))
-        DY = 1 / (max(DataY["Data"]["x"]) - min(DataY["Data"]["x"]))
+        # If there is only one row, this will cause issues.
+        if len(DataX["Data"]["x"]) > 1:
+            DX = 1 / (max(DataX["Data"]["x"]) - min(DataX["Data"]["x"]))
+        if len(DataY["Data"]["x"]) > 1:
+            DY = 1 / (max(DataY["Data"]["x"]) - min(DataY["Data"]["x"]))
 
     # Initialize empty matrix
     Matrix = np.zeros([NX, NY])
