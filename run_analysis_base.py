@@ -9,6 +9,7 @@ import subprocess
 import sys
 from collections import defaultdict
 from pathlib import Path
+from typing import Any, Dict
 
 import matplotlib as mpl
 import matplotlib.cm as cm
@@ -104,7 +105,48 @@ def _virtuality_qhat_function(qhat_parametrization_type: ParametrizationType, en
       return 0
   else:
     raise NotImplementedError(f"Unknown parametrization type {qhat_parametrization_type}")
-  return ans;
+  return ans
+
+def _generate_shape_covariance_matrices(data: Dict[str, Any], filename: Path) -> None:
+  has_shape_uncertainty = False
+  for label in data["SysLabel"]:
+    if "shape" in label.lower():
+      has_shape_uncertainty = True
+      break
+
+  if has_shape_uncertainty:
+    length = len(data["Data"]["x"])
+    min_value, max_value = -1., 1.
+    # We generate rows that linearly interpolate between the max and min value.
+    # NOTE: This means that our step size is negative!
+    arr, step_size = np.linspace(max_value, min_value, length, endpoint=True, retstep=True)
+
+    # The idea here is that we'll incrementally roll our array to the right one step
+    # at a time, and then we'll calculate the left most value. Since we continue to
+    # update the same array, we benefit from the calculations in the previous steps.
+    # NOTE: I imagine there's a better way to do this, but this works, so we'll take it for now.
+    arrays = []
+    _temp_array = arr
+    for n in range(0, length):
+        # We don't want to roll the first time since we've already calculated the row
+        if n > 0:
+          _temp_array = np.roll(_temp_array, 1)
+          # Since we want to decrease from
+          _temp_array[0] = 1 - (n * -1 * step_size)
+        arrays.append(_temp_array)
+
+    # Put it all together
+    shape_covariance_matrix = np.stack(arrays)
+    # And write to file
+
+    # Write to file
+    # Version 1.0
+    header = "Version 1.0"
+    header += "\n" + f"Data1 {filename.stem}"
+    header += "\n" + f"Data2 {filename.stem}"
+    output_filename = filename.parent / str(filename.name).replace("Data", "Covariance")
+    np.savetxt(output_filename, shape_covariance_matrix, header=header)
+
 
 ################################################################
 class RunAnalysisBase():
@@ -566,6 +608,11 @@ class RunAnalysisBase():
           #  _system = f"{system}{parametrization_type}"
           #  self.RawData['Data'][_system][observable][centrality] = result
           self.RawData['Data'][system][observable][centrality] = result
+
+          # Create shape uncertainty covariance matrices
+          # NOTE: This shouldn't really be here long term, but we need the data dn the filename, and
+          #       putting it here is fast and let's me do it right away.
+          _generate_shape_covariance_matrices(data=result, filename=input_file)
         elif 'Covariance' in input_file.name:
           self.RawData['RawCov1L'][system][observable][centrality] = reader.ReadCovariance(input_file)
         elif 'Prediction' in input_file.name:
