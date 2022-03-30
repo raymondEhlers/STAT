@@ -398,6 +398,7 @@ class RunAnalysisBase():
     for system in self.RawData['Data'].keys():
       for observable in self.RawData['Data'][system].keys():
         for centrality in self.RawData['Data'][system][observable].keys():
+          # TODO: RJE 29 March 2022: I think "Prediction" should maybe be "Data"?
           self.Data['Prediction'][system][observable][centrality] = self.RawData['Data'][system][observable][centrality]['Data']
 
     # Model predictions
