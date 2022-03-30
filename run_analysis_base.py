@@ -64,6 +64,7 @@ def _integral_PDF(xB: float, a: float, b: float) -> float:
   return ans
 
 def _virtuality_qhat_function(qhat_parametrization_type: ParametrizationType, ener_loc: float, mu_square: float, Q0: float, C1: float, C2: float, C3: float, C4: float) -> float:
+  raise RuntimeError("Per Abhijit, when reporting qhat(T, E), we _do not_ evaluate this function! See this thread: https://jetscapeworkspace.slack.com/archives/C025X5NE9SN/p1648404101376299")
   ans = 0
   xB = 0
   xB0 = 0
@@ -279,18 +280,18 @@ class RunAnalysisBase():
       scale_net = 2 * E * T
       if scale_net < 1.0:
         scale_net = 1.0
-      # TODO: Determine how to figure out alpha_s, since it varies in the MATTER calculation. I guess it needs to be
-      #       integrated over?
-      qhat = (C_a * 50.4864 / np.pi) * _running_alpha_s(mu_sqaure=scale_net, alpha_s=alpha_s) * alpha_s_fix * np.pow(T, 3) * np.log(scale_net / debye_mass_square)
-      qhat = qhat * _virtuality_qhat_function(
-        qhat_parametrization_type=ParametrizationType.exponential, ener_loc=E,
-        # mu_square is the virtuality.
-        # see: https://github.com/JETSCAPE/JETSCAPE-COMP/blob/e83b8ac71f8d71b9ad8ed71935f85d8951a16cb9/src/jet/Matter.cc#L805
-        mu_square=Q,
-        Q0=Q0, C1=C1, C2=C2, C3=C3,
-        # C4 is unused for this parametrization, so just set to 0
-        C4=0,
-      )
+      # alpha_s should be taken as 2*E*T, per Abhijit. See: https://jetscapeworkspace.slack.com/archives/C025X5NE9SN/p1648404101376299
+      qhat = (C_a * 50.4864 / np.pi) * _running_alpha_s(mu_sqaure=scale_net, alpha_s=scale_net) * alpha_s_fix * np.pow(T, 3) * np.log(scale_net / debye_mass_square)
+      # This is not to be evaluated when evaluating qhat(T, E), per Abhijit. See: https://jetscapeworkspace.slack.com/archives/C025X5NE9SN/p1648404101376299
+      #qhat = qhat * _virtuality_qhat_function(
+      #  qhat_parametrization_type=ParametrizationType.exponential, ener_loc=E,
+      #  # mu_square is the virtuality.
+      #  # see: https://github.com/JETSCAPE/JETSCAPE-COMP/blob/e83b8ac71f8d71b9ad8ed71935f85d8951a16cb9/src/jet/Matter.cc#L805
+      #  mu_square=Q,
+      #  Q0=Q0, C1=C1, C2=C2, C3=C3,
+      #  # C4 is unused for this parametrization, so just set to 0
+      #  C4=0,
+      #)
       return qhat
     else:
       Lambda = 0.2
