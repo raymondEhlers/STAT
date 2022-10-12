@@ -1,0 +1,675 @@
+# Configuration parameters to download experimental data and/or edit its format,
+# used by the script get_expdata.py.
+#
+# You can specify one or more blocks for HEPData, PHENIX, or EditData or any combination,
+# and they will all be processed according to their appropriate scripts, steered by get_expdata.py.
+
+filepath: &filepath "input/MATTERLBT-Analysis1-Hadron-Jet-RAA/"
+
+## Development area
+
+
+# This block will stop the script immediately so we don't unnecessarily hit HEPData
+# Uncomment when needed
+#hepdata_break:
+#  data_url: [""]
+## End development area
+
+#########################
+### Hadron RAA
+#########################
+
+## PHENIX Hadron RAA
+# We take it from hepdata instead of phenix because the phenix page was down
+# Note: Avoid "PHENIX" in the name so that the get_phenix script doesn't try to pick this up.
+## Checked: RJE
+hepdata_phx_hadronRAA:
+  filepath: *filepath
+  data_vrs: 'Version 1.0'
+  data_str: 'Data'
+  data_url: [
+    "https://www.hepdata.net/download/table/ins1127262/Figure%2011/2/yaml",
+    "https://www.hepdata.net/download/table/ins1127262/Figure%2011/2/yaml",
+    "https://www.hepdata.net/download/table/ins1127262/Figure%2011/2/yaml",
+    "https://www.hepdata.net/download/table/ins1127262/Figure%2011/2/yaml",
+    "https://www.hepdata.net/download/table/ins1127262/Figure%2011/2/yaml",
+    "https://www.hepdata.net/download/table/ins1127262/Figure%2011/2/yaml",
+  ]
+  data_doi: ['https://doi.org/10.1103/PhysRevC.87.034911','https://doi.org/10.1103/PhysRevC.87.034911','https://doi.org/10.1103/PhysRevC.87.034911','https://doi.org/10.1103/PhysRevC.87.034911','https://doi.org/10.1103/PhysRevC.87.034911','https://doi.org/10.1103/PhysRevC.87.034911', ]
+  data_fig: ['figure 11','figure 11','figure 11','figure 11','figure 11','figure 11',]
+  data_exp: ['PHENIX','PHENIX','PHENIX','PHENIX','PHENIX','PHENIX']
+  data_sys: ['AuAu200','AuAu200','AuAu200','AuAu200','AuAu200','AuAu200']
+  data_qualifiers: [
+    # NOTE: The name is wrong in the file...
+    {name: '$p_T$', value: '$0-5\%$ centrality'},
+    {name: '$p_T$', value: '$0-10\%$ centrality'},
+    {name: '$p_T$', value: '$10-20\%$ centrality'},
+    {name: '$p_T$', value: '$20-30\%$ centrality'},
+    {name: '$p_T$', value: '$30-40\%$ centrality'},
+    {name: '$p_T$', value: '$40-50\%$ centrality'},
+  ]
+  data_meas: ['hadron_RAA_pi0','hadron_RAA_pi0','hadron_RAA_pi0','hadron_RAA_pi0', "hadron_RAA_pi0", "hadron_RAA_pi0"]
+  data_cent: ['0-5', '0-10', '10-20', '20-30', '30-40', '40-50']
+  data_year: ['2013','2013','2013','2013', "2013", "2013"]
+
+## STAR hadron
+## TODO: Does the sys uncert include the normalization uncertainty? It doesn't appear to be included as a global uncertainty. RJE, Oct 2022
+## Checked: RJE
+hepdata_hadron_star:
+  filepath: *filepath
+  data_vrs: 'Version 1.0'
+  data_str: 'Data'
+  data_url: [
+    "https://www.hepdata.net/download/table/ins619063/Table3/1/yaml",
+    "https://www.hepdata.net/download/table/ins619063/Table3/1/yaml",
+    "https://www.hepdata.net/download/table/ins619063/Table3/1/yaml",
+    "https://www.hepdata.net/download/table/ins619063/Table3/1/yaml",
+  ]
+  data_doi: [
+    'https://doi.org/10.17182/hepdata.93908',
+    'https://doi.org/10.17182/hepdata.93908',
+    'https://doi.org/10.17182/hepdata.93908',
+    'https://doi.org/10.17182/hepdata.93908'
+  ]
+  data_fig: ['figure 3', 'figure 3', 'figure 3', 'figure 3']
+  data_exp: ['STAR', 'STAR', 'STAR', 'STAR']
+  data_sys: ['AuAu200','AuAu200','AuAu200','AuAu200']
+  data_meas: ['hadron_RAA_ch','hadron_RAA_ch','hadron_RAA_ch','hadron_RAA_ch']
+  data_cent: ['0-5','10-20','20-30','30-40']
+  data_year: ['2003','2003','2003','2003']
+  data_qualifiers: [
+    ### NOTE name is wrong in the yaml...
+    {name: '$pT [GeV/c]$', value: '0-5% <Nbin>[1051.3+71.5-71.1] <Npart>[352.4+3.4-4.0] Bands: <Nbin>[1.0+0.16-0.16] <Npart>[0.17+0.02-0.02]'},
+    # NOTE: Although the spectra are available, 5-10% is not included in the hadron RAA figure (ie. Fig 3)
+    #       For now (October 2022), we skip it.
+    {name: '$pT [GeV/c]$', value: '10-20% <Nbin>[591.3+51.9-59.9] <Npart>[234.6+8.3-9.3] Bands: <Nbin>[1.0+0.17-0.17] <Npart>[0.20+0.03-0.03]'},
+    {name: '$pT [GeV/c]$', value: '20-30% <Nbin>[368.6+41.1-50.6] <Npart>[166.7+9.0-10.6] Bands: <Nbin>[1.0+0.18-0.20] <Npart>[0.23+0.03-0.03]'},
+    {name: '$pT [GeV/c]$', value: '30-40% <Nbin>[220.2+30.0-38.3] <Npart>[115.5+8.7-11.2] Bands: <Nbin>[1.0+0.20-0.22] <Npart>[0.26+0.04-0.04]'},
+  ]
+
+## CMS and ATLAS hadron RAA
+## (These have separate centralities in separate tables, so we can define their block together)
+## TODO: Does the sys uncert include the normalization uncertainty? It doesn't appear to be included as a global uncertainty. RJE, Oct 2022
+## Checked: RJE
+hepdata_hadronRAA_CMS_ATLAS:
+  filepath: *filepath
+  data_vrs: 'Version 1.0'
+  data_str: 'Data'
+  data_url: [
+    "https://www.hepdata.net/download/table/ins1496050/Table%208/2/yaml",
+    "https://www.hepdata.net/download/table/ins1496050/Table%209/2/yaml",
+    "https://www.hepdata.net/download/table/ins1496050/Table%2014/2/yaml",
+    "https://www.hepdata.net/download/table/ins1496050/Table%2010/2/yaml",
+    "https://www.hepdata.net/download/table/ins1496050/Table%2011/2/yaml",
+    'https://www.hepdata.net/download/table/ins1360290/Table33/2/yaml',
+    'https://www.hepdata.net/download/table/ins1360290/Table34/2/yaml',
+    'https://www.hepdata.net/download/table/ins1360290/Table35/2/yaml',
+    'https://www.hepdata.net/download/table/ins1360290/Table36/2/yaml',
+    'https://www.hepdata.net/download/table/ins1360290/Table37/2/yaml',
+    'https://www.hepdata.net/download/table/ins1360290/Table38/2/yaml',
+  ]
+  data_doi: [
+    'http://dx.doi.org/10.1007/JHEP04(2017)039',
+    'http://dx.doi.org/10.1007/JHEP04(2017)039',
+    'http://dx.doi.org/10.1007/JHEP04(2017)039',
+    'http://dx.doi.org/10.1007/JHEP04(2017)039',
+    'http://dx.doi.org/10.1007/JHEP04(2017)039',
+    'http://dx.doi.org/10.1007/JHEP09(2015)050',
+    'http://dx.doi.org/10.1007/JHEP09(2015)050',
+    'http://dx.doi.org/10.1007/JHEP09(2015)050',
+    'http://dx.doi.org/10.1007/JHEP09(2015)050',
+    'http://dx.doi.org/10.1007/JHEP09(2015)050',
+    'http://dx.doi.org/10.1007/JHEP09(2015)050',
+  ]
+  data_fig: [
+    'figure 3a','figure 3b','figure 4a','figure 3c','figure 3d',
+    'figure 13','figure 13','figure 13','figure 13','figure 13','figure 13'
+  ]
+  data_exp: [
+    'CMS','CMS','CMS','CMS','CMS',
+    'ATLAS','ATLAS','ATLAS','ATLAS','ATLAS','ATLAS'
+  ]
+  data_sys: [
+    'PbPb5020','PbPb5020','PbPb5020','PbPb5020','PbPb5020',
+    'PbPb2760','PbPb2760','PbPb2760','PbPb2760','PbPb2760','PbPb2760'
+  ]
+  data_meas: [
+    'hadron_RAA_ch','hadron_RAA_ch','hadron_RAA_ch','hadron_RAA_ch','hadron_RAA_ch',
+    'hadron_RAA_ch','hadron_RAA_ch','hadron_RAA_ch','hadron_RAA_ch','hadron_RAA_ch','hadron_RAA_ch'
+  ]
+  data_cent: [
+    '0-5','5-10','0-10','10-30','30-50',
+    '0-5','5-10','10-20','20-30','30-40','40-50'
+  ]
+  data_year: [
+    '2017','2017','2017','2017','2017',
+    '2015','2015','2015','2015','2015','2015'
+  ]
+
+## CMS and ATLAS hadron RAA
+## Multiple centralities in the same table, so we need to handle it individually
+## TODO: Does the sys uncert include the normalization uncertainty? It doesn't appear to be included as a global uncertainty. RJE, Oct 2022
+## Checked: RJE
+hepdata_hadronRAA_CMS2760:
+  filepath: *filepath
+  data_vrs: 'Version 1.0'
+  data_str: 'Data'
+  data_url: [
+    'https://www.hepdata.net/download/table/ins1088823/Table%205/1/yaml',
+    'https://www.hepdata.net/download/table/ins1088823/Table%205/1/yaml',
+    'https://www.hepdata.net/download/table/ins1088823/Table%205/1/yaml',
+    'https://www.hepdata.net/download/table/ins1088823/Table%206/1/yaml'
+  ]
+  data_doi: [
+    'https://doi.org/10.17182/hepdata.58980',
+    'https://doi.org/10.17182/hepdata.58980',
+    'https://doi.org/10.17182/hepdata.58980',
+    'https://doi.org/10.17182/hepdata.58980'
+  ]
+  data_fig: ['figure 5', 'figure 5', 'figure 5', 'figure 5']
+  data_exp: ['CMS','CMS','CMS','CMS']
+  data_sys: ['PbPb2760','PbPb2760','PbPb2760','PbPb2760']
+  data_meas: ['hadron_RAA_ch','hadron_RAA_ch','hadron_RAA_ch','hadron_RAA_ch']
+  data_cent: ['0-5','5-10','10-30','30-50']
+  data_year: ['2012','2012','2012','2012']
+  data_qualifiers: [
+    {name: 'CENTRALITY', value: '0.0-5.0'},
+    {name: 'CENTRALITY', value: '5.0-10.0'},
+    {name: 'CENTRALITY', value: '10.0-30.0'},
+    {name: 'CENTRALITY', value: '30.0-50.0'}
+  ]
+
+## 2760 GeV ALICE, h+-
+## TODO: There is an a global systematic here, as noted on the HEPData page, but apparently not included in the HEPData file itself.
+##       >> Additional systematic error for PBPB 0-5 pct data: +2.2 pct -2.2 pct
+##       >> Additional systematic error for PBPB 5-10 pct data: +2.2 pct -2.2 pct
+##       >> Additional systematic error for PBPB 10-20 pct data: +2.4 pct -2.4 pct
+##       >> Additional systematic error for PBPB 20-30 pct data: +2.7 pct -2.7 pct
+##       >> Additional systematic error for PBPB 30-40 pct data: +3.4 pct -3.4 pct
+##       >> Additional systematic error for PBPB 40-50 pct data: +3.7 pct -3.7 pct
+## Checked: RJE
+hepdata_hadronRAA_ALICE_2760:
+  filepath: *filepath
+  data_vrs: "Version 1.0"
+  data_str: "Data"
+  data_url: [
+    'https://www.hepdata.net/download/table/ins1657384/Table%207/1/yaml',
+    'https://www.hepdata.net/download/table/ins1657384/Table%207/1/yaml',
+    'https://www.hepdata.net/download/table/ins1657384/Table%207/1/yaml',
+    'https://www.hepdata.net/download/table/ins1657384/Table%207/1/yaml',
+    'https://www.hepdata.net/download/table/ins1657384/Table%207/1/yaml',
+    'https://www.hepdata.net/download/table/ins1657384/Table%207/1/yaml'
+  ]
+  data_doi: [
+    'https://doi.org/10.1007/JHEP11%282018%29013',
+    'https://doi.org/10.1007/JHEP11%282018%29013',
+    'https://doi.org/10.1007/JHEP11%282018%29013',
+    'https://doi.org/10.1007/JHEP11%282018%29013',
+    'https://doi.org/10.1007/JHEP11%282018%29013',
+    'https://doi.org/10.1007/JHEP11%282018%29013'
+  ]
+  data_fig: ['figure 6', 'figure 6', 'figure 6', 'figure 6', 'figure 6', 'figure 6']
+  data_exp: ['ALICE', 'ALICE', 'ALICE', 'ALICE', 'ALICE', 'ALICE']
+  data_sys: ['PbPb2760', 'PbPb2760', 'PbPb2760', 'PbPb2760', 'PbPb2760', 'PbPb2760']
+  data_qualifiers: [
+    {name: 'CENT', value: '0-5 pct'},
+    {name: 'CENT', value: '5-10 pct'},
+    {name: 'CENT', value: '10-20 pct'},
+    {name: 'CENT', value: '20-30 pct'},
+    {name: 'CENT', value: '30-40 pct'},
+    {name: 'CENT', value: '40-50 pct'}
+  ]
+  data_meas: ['hadron_RAA_ch', 'hadron_RAA_ch', 'hadron_RAA_ch', 'hadron_RAA_ch', 'hadron_RAA_ch', 'hadron_RAA_ch']
+  data_cent: ['0-5', '5-10', '10-20', '20-30', '30-40', '40-50']
+  data_year: ['2018', '2018', '2018', '2018', '2018', '2018']
+
+## 5020 GeV ALICE, h+-
+## TODO: There is an a global systematic here, as noted on the HEPData page, but apparently not included in the HEPData file itself.
+##       >> Additional systematic error for PBPB 0-5 pct data: +2.7 pct -2.7 pct
+##       >> Additional systematic error for PBPB 5-10 pct data: +3.5 pct -3.5 pct
+##       >> Additional systematic error for PBPB 10-20 pct data: +3.5 pct -3.5 pct
+##       >> Additional systematic error for PBPB 20-30 pct data: +4.1 pct -4.1 pct
+##       >> Additional systematic error for PBPB 30-40 pct data: +3.7 pct -3.7 pct
+##       >> Additional systematic error for PBPB 40-50 pct data: +3.9 pct -3.9 pct
+## Checked: RJE
+hepdata_hadronRAA_ALICE_5020:
+  filepath: *filepath
+  data_vrs: "Version 1.0"
+  data_str: "Data"
+  data_url: [
+    'https://www.hepdata.net/download/table/ins1657384/Table%208/1/yaml',
+    'https://www.hepdata.net/download/table/ins1657384/Table%208/1/yaml',
+    'https://www.hepdata.net/download/table/ins1657384/Table%208/1/yaml',
+    'https://www.hepdata.net/download/table/ins1657384/Table%208/1/yaml',
+    'https://www.hepdata.net/download/table/ins1657384/Table%208/1/yaml',
+    'https://www.hepdata.net/download/table/ins1657384/Table%208/1/yaml'
+  ]
+  data_doi: [
+    'https://doi.org/10.1007/JHEP11%282018%29013',
+    'https://doi.org/10.1007/JHEP11%282018%29013',
+    'https://doi.org/10.1007/JHEP11%282018%29013',
+    'https://doi.org/10.1007/JHEP11%282018%29013',
+    'https://doi.org/10.1007/JHEP11%282018%29013',
+    'https://doi.org/10.1007/JHEP11%282018%29013'
+  ]
+  data_fig: ['figure 6', 'figure 6', 'figure 6', 'figure 6', 'figure 6', 'figure 6']
+  data_exp: ['ALICE', 'ALICE', 'ALICE', 'ALICE', 'ALICE', 'ALICE']
+  data_sys: ['PbPb5020', 'PbPb5020', 'PbPb5020', 'PbPb5020', 'PbPb5020', 'PbPb5020']
+  data_qualifiers: [
+    {name: 'CENT', value: '0-5 pct'},
+    {name: 'CENT', value: '5-10 pct'},
+    {name: 'CENT', value: '10-20 pct'},
+    {name: 'CENT', value: '20-30 pct'},
+    {name: 'CENT', value: '30-40 pct'},
+    {name: 'CENT', value: '40-50 pct'}
+  ]
+  data_meas: ['hadron_RAA_ch', 'hadron_RAA_ch', 'hadron_RAA_ch', 'hadron_RAA_ch', 'hadron_RAA_ch', 'hadron_RAA_ch']
+  data_cent: ['0-5', '5-10', '10-20', '20-30', '30-40', '40-50']
+  data_year: ['2018', '2018', '2018', '2018', '2018', '2018']
+
+## 2760 GeV ALICE, pi0
+## NOTE: Per the HEPdata comment, the global uncertainties are included in the systematic uncertainties.
+## Checked: RJE
+hepdata_hadronRAApi0_2760:
+  filepath: *filepath
+  data_vrs: "Version 1.0"
+  data_str: "Data"
+  data_url: [
+    'https://www.hepdata.net/download/table/ins1662651/Table%205/1/yaml',
+    'https://www.hepdata.net/download/table/ins1662651/Table%206/1/yaml'
+  ]
+  data_doi: ['https://doi.org/10.17182/hepdata.83964', 'https://doi.org/10.17182/hepdata.83964']
+  data_fig: ['figure 4', 'figure 4']
+  data_exp: ['ALICE', 'ALICE']
+  data_sys: ['PbPb2760', 'PbPb2760']
+  data_meas: ['hadron_RAA_pi0', 'hadron_RAA_pi0']
+  data_cent: ['0-10', '20-50']
+  data_year: ['2018', '2018']
+
+## 2760 GeV ALICE, pi+-
+## TODO: Does the sys uncert include the normalization uncertainty? It doesn't appear to be included as a global uncertainty. RJE, Oct 2022
+## Checked: RJE
+hepdata_hadronRAApi_2760:
+  filepath: *filepath
+  data_vrs: "Version 1.0"
+  data_str: "Data"
+  data_url: [
+    'https://www.hepdata.net/download/table/ins1377750/Table%207/1/yaml',
+    'https://www.hepdata.net/download/table/ins1377750/Table%208/1/yaml',
+    'https://www.hepdata.net/download/table/ins1377750/Table%209/1/yaml',
+    'https://www.hepdata.net/download/table/ins1377750/Table%2010/1/yaml',
+  ]
+  data_doi: ['https://doi.org/10.17182/hepdata.71310', 'https://doi.org/10.17182/hepdata.71310', 'https://doi.org/10.17182/hepdata.71310', 'https://doi.org/10.17182/hepdata.71310']
+  data_fig: ['figure 23', 'figure 23', 'figure 23', 'figure 23']
+  data_exp: ['ALICE', 'ALICE', 'ALICE', 'ALICE']
+  data_sys: ['PbPb2760', 'PbPb2760', 'PbPb2760', 'PbPb2760']
+  data_meas: ['hadron_RAA_pi', 'hadron_RAA_pi', 'hadron_RAA_pi', 'hadron_RAA_pi']
+  data_cent: ['0-5', '5-10', '10-20', '20-40']
+  data_year: ['2016', '2016', '2016', '2016']
+  data_qualifiers: [
+    {name: 'RE', value: 'P P --> (PI+ + PI-) X'},
+    {name: 'RE', value: 'P P --> (PI+ + PI-) X'},
+    {name: 'RE', value: 'P P --> (PI+ + PI-) X'},
+    {name: 'RE', value: 'P P --> (PI+ + PI-) X'}
+  ]
+
+## 5020 GeV ALICE, pi+-
+## TODO: Does the sys uncert include the normalization uncertainty? It doesn't appear to be included as a global uncertainty. RJE, Oct 2022
+## Checked: RJE
+hepdata_hadronRAApi_5020:
+  filepath: *filepath
+  data_vrs: "Version 1.0"
+  data_str: "Data"
+  data_url: [
+    'https://www.hepdata.net/download/table/ins1759506/Table%2015/1/yaml',
+    'https://www.hepdata.net/download/table/ins1759506/Table%2015/1/yaml',
+    'https://www.hepdata.net/download/table/ins1759506/Table%2015/1/yaml',
+    'https://www.hepdata.net/download/table/ins1759506/Table%2015/1/yaml',
+    'https://www.hepdata.net/download/table/ins1759506/Table%2015/1/yaml',
+    'https://www.hepdata.net/download/table/ins1759506/Table%2015/1/yaml'
+  ]
+  data_doi: ['https://doi.org/10.17182/hepdata.104923', 'https://doi.org/10.17182/hepdata.104923', 'https://doi.org/10.17182/hepdata.104923', 'https://doi.org/10.17182/hepdata.104923', 'https://doi.org/10.17182/hepdata.104923', 'https://doi.org/10.17182/hepdata.104923']
+  data_fig: ['figure 10', 'figure 10', 'figure 10', 'figure 10', 'figure 10', 'figure 10']
+  data_exp: ['ALICE', 'ALICE', 'ALICE', 'ALICE', 'ALICE', 'ALICE']
+  data_sys: ['PbPb5020', 'PbPb5020', 'PbPb5020', 'PbPb5020', 'PbPb5020', 'PbPb5020']
+  data_meas: ['hadron_RAA_pi', 'hadron_RAA_pi', 'hadron_RAA_pi', 'hadron_RAA_pi', 'hadron_RAA_pi', 'hadron_RAA_pi']
+  data_cent: ['0-5', '5-10', '10-20', '20-30', '30-40', '40-50']
+  data_year: ['2020', '2020', '2020', '2020', '2020', '2020']
+  data_qualifiers: [
+    {name: 'CENTRALITY', value: '0-5'},
+    {name: 'CENTRALITY', value: '5-10'},
+    {name: 'CENTRALITY', value: '10-20'},
+    {name: 'CENTRALITY', value: '20-30'},
+    {name: 'CENTRALITY', value: '30-40'},
+    {name: 'CENTRALITY', value: '40-50'},
+  ]
+
+
+#########################
+### Jet RAA
+#########################
+
+## 200 GeV STAR
+# NOTE: Includes the "biased" region!
+## Checked: RJE
+hepdata_STAR_JetRAA_200:
+  filepath: *filepath
+  data_vrs: "Version 1.0"
+  data_str: "Data"
+  data_url: ["https://www.hepdata.net/download/table/ins1798665/Table%2010/1/yaml", "https://www.hepdata.net/download/table/ins1798665/Table%2010/1/yaml", "https://www.hepdata.net/download/table/ins1798665/Table%2010/1/yaml"]
+  data_doi: ["https://doi.org/10.1103/PhysRevC.102.054913", "https://doi.org/10.1103/PhysRevC.102.054913", "https://doi.org/10.1103/PhysRevC.102.054913"]
+  data_fig: ['figure 17, bottom', 'figure 17, bottom', 'figure 17, bottom']
+  data_exp: ['STAR', 'STAR', 'STAR']
+  data_sys: ['AuAu200', 'AuAu200', 'AuAu200']
+  data_qualifiers: [
+    {name: '$p_{T,jet}^{ch}$ $(\mathrm{GeV}/c)$', value: '$R=0.2$'},
+    {name: '$p_{T,jet}^{ch}$ $(\mathrm{GeV}/c)$', value: '$R=0.3$'},
+    {name: '$p_{T,jet}^{ch}$ $(\mathrm{GeV}/c)$', value: '$R=0.4$'}
+  ]
+  data_meas: ['inclusive_chjet_RAA_R02', 'inclusive_chjet_RAA_R03', 'inclusive_chjet_RAA_R04']
+  data_cent: ['0-10', '0-10', '0-10']
+  data_year: ['2011', '2011', '2011']
+
+## 2.76 TeV ALICE
+## Checked: RJE
+hepdata_ALICE_JetRAA_2760:
+  filepath: *filepath
+  data_vrs: "Version 1.0"
+  data_str: "Data"
+  data_url: ["https://www.hepdata.net/download/table/ins1343112/Table%206/1/yaml", "https://www.hepdata.net/download/table/ins1343112/Table%207/1/yaml"]
+  data_doi: ["https://doi.org/10.1016/j.physletb.2015.04.039", "https://doi.org/10.1016/j.physletb.2015.04.039"]
+  data_fig: ['figure 5, left', 'figure 5, right']
+  data_exp: ['ALICE', 'ALICE']
+  data_sys: ['PbPb2760', 'PbPb2760']
+  data_meas: ['inclusive_jet_RAA_R02', 'inclusive_jet_RAA_R02']
+  data_cent: ['0-10', '10-30']
+  data_year: ['2011', '2011']
+
+hepdata_ALICE_ChargedJet_2760:
+  filepath: *filepath
+  data_vrs: "Version 1.0"
+  data_str: "Data"
+  data_url: ['https://www.hepdata.net/download/table/ins1263194/Table%2021/1/yaml', 'https://www.hepdata.net/download/table/ins1263194/Table%2021/1/yaml', 'https://www.hepdata.net/download/table/ins1263194/Table%2022/1/yaml', 'https://www.hepdata.net/download/table/ins1263194/Table%2022/1/yaml', 'https://www.hepdata.net/download/table/ins1263194/Table%2023/1/yaml', 'https://www.hepdata.net/download/table/ins1263194/Table%2023/1/yaml']
+  data_doi: ['https://doi.org/10.17182/hepdata.62723', 'https://doi.org/10.17182/hepdata.62723', 'https://doi.org/10.17182/hepdata.62723', 'https://doi.org/10.17182/hepdata.62723', 'https://doi.org/10.17182/hepdata.62723', 'https://doi.org/10.17182/hepdata.62723']
+  data_fig: ['figure 9', 'figure 9', 'figure 9', 'figure 9', 'figure 9', 'figure 9']
+  data_exp: ['ALICE', 'ALICE', 'ALICE', 'ALICE', 'ALICE', 'ALICE']
+  data_sys: ['PbPb2760', 'PbPb2760', 'PbPb2760', 'PbPb2760', 'PbPb2760', 'PbPb2760']
+  data_meas: ['inclusive_chjet_RCP_R02', 'inclusive_chjet_RCP_R03', 'inclusive_chjet_RCP_R02', 'inclusive_chjet_RCP_R03', 'inclusive_chjet_RCP_R02', 'inclusive_chjet_RCP_R03']
+  data_cent: ['0-10', '0-10', '10-30', '10-30', '30-50', '30-50']
+  data_year: ['2014', '2014', '2014', '2014', '2014', '2014']
+  data_qualifiers: [
+    {name: "", value: "Anti-kT R = 0.2"},
+    {name: "", value: "Anti-kT R = 0.3"},
+    {name: "", value: "Anti-kT R = 0.2"},
+    {name: "", value: "Anti-kT R = 0.3"},
+    {name: "", value: "Anti-kT R = 0.2"},
+    {name: "", value: "Anti-kT R = 0.3"}
+  ]
+
+
+## 2.76 TeV ATLAS
+## Checked: RJE
+hepdata_ATLAS_JetRAA_2760:
+  filepath: *filepath
+  data_vrs: "Version 1.0"
+  data_str: "Data"
+  data_url: [
+    "https://www.hepdata.net/download/table/ins1326911/Table%2027/1/yaml",
+    "https://www.hepdata.net/download/table/ins1326911/Table%2028/1/yaml",
+    "https://www.hepdata.net/download/table/ins1326911/Table%2029/1/yaml",
+    "https://www.hepdata.net/download/table/ins1326911/Table%2030/1/yaml",
+    "https://www.hepdata.net/download/table/ins1326911/Table%2031/1/yaml",
+  ]
+  data_doi: [
+    "https://doi.org/10.1103/PhysRevLett.114.072302",
+    "https://doi.org/10.1103/PhysRevLett.114.072302",
+    "https://doi.org/10.1103/PhysRevLett.114.072302",
+    "https://doi.org/10.1103/PhysRevLett.114.072302",
+    "https://doi.org/10.1103/PhysRevLett.114.072302",
+  ]
+  data_fig: ["Figure 3, top", "Figure 3, top", "Figure 3, top", "Figure 3, top", "Figure 3, top"]
+  data_exp: ['ATLAS', 'ATLAS', 'ATLAS', 'ATLAS', 'ATLAS']
+  data_sys: ['PbPb2760', 'PbPb2760', 'PbPb2760', 'PbPb2760', 'PbPb2760']
+  data_meas: ["inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04"]
+  data_cent: ['0-10', '10-20', '20-30', "30-40", "40-50"]
+  data_year: ['2011', '2011', "2011", "2011", "2011"]
+
+## 2.76 TeV CMS
+## Checked: RJE
+hepdata_CMS_JetRAA_2760:
+  filepath: *filepath
+  data_vrs: "Version 1.0"
+  data_str: "Data"
+  data_url: [
+    # 0-5%
+    "https://www.hepdata.net/download/table/ins1487278/Table%208a/1/yaml", "https://www.hepdata.net/download/table/ins1487278/Table%208a/1/yaml", "https://www.hepdata.net/download/table/ins1487278/Table%208a/1/yaml",
+    # 5-10%
+    "https://www.hepdata.net/download/table/ins1487278/Table%208b/1/yaml", "https://www.hepdata.net/download/table/ins1487278/Table%208b/1/yaml", "https://www.hepdata.net/download/table/ins1487278/Table%208b/1/yaml",
+    # 10-30%
+    "https://www.hepdata.net/download/table/ins1487278/Table%208c/1/yaml", "https://www.hepdata.net/download/table/ins1487278/Table%208c/1/yaml", "https://www.hepdata.net/download/table/ins1487278/Table%208c/1/yaml",
+    # 30-50%
+    "https://www.hepdata.net/download/table/ins1487278/Table%208d/1/yaml", "https://www.hepdata.net/download/table/ins1487278/Table%208d/1/yaml", "https://www.hepdata.net/download/table/ins1487278/Table%208d/1/yaml",
+  ]
+  data_doi: [
+    "https://doi.org/10.1103/PhysRevC.96.015202", "https://doi.org/10.1103/PhysRevC.96.015202", "https://doi.org/10.1103/PhysRevC.96.015202",
+    "https://doi.org/10.1103/PhysRevC.96.015202", "https://doi.org/10.1103/PhysRevC.96.015202", "https://doi.org/10.1103/PhysRevC.96.015202",
+    "https://doi.org/10.1103/PhysRevC.96.015202", "https://doi.org/10.1103/PhysRevC.96.015202", "https://doi.org/10.1103/PhysRevC.96.015202",
+    "https://doi.org/10.1103/PhysRevC.96.015202", "https://doi.org/10.1103/PhysRevC.96.015202", "https://doi.org/10.1103/PhysRevC.96.015202",
+  ]
+  data_fig: [
+    'Figure 8-a', 'Figure 8-a', "Figure 8-a",
+    'Figure 8-b', 'Figure 8-b', "Figure 8-b",
+    'Figure 8-c', 'Figure 8-c', "Figure 8-c",
+    'Figure 8-d', 'Figure 8-d', "Figure 8-d",
+  ]
+  data_exp: [
+    'CMS', 'CMS', "CMS",
+    'CMS', 'CMS', "CMS",
+    'CMS', 'CMS', "CMS",
+    'CMS', 'CMS', "CMS",
+  ]
+  data_sys: [
+    'PbPb2760', 'PbPb2760', "PbPb2760",
+    'PbPb2760', 'PbPb2760', "PbPb2760",
+    'PbPb2760', 'PbPb2760', "PbPb2760",
+    'PbPb2760', 'PbPb2760', "PbPb2760",
+  ]
+  data_qualifiers: [
+    # 0-5%
+    {name: anti-k$_T$ R, value: 0.2}, {name: anti-k$_T$ R, value: 0.3}, {name: anti-k$_T$ R, value: 0.4},
+    # 5-10%
+    {name: anti-k$_T$ R, value: 0.2}, {name: anti-k$_T$ R, value: 0.3}, {name: anti-k$_T$ R, value: 0.4},
+    # 10-30%
+    {name: anti-k$_T$ R, value: 0.2}, {name: anti-k$_T$ R, value: 0.3}, {name: anti-k$_T$ R, value: 0.4},
+    # 30-50%
+    {name: anti-k$_T$ R, value: 0.2}, {name: anti-k$_T$ R, value: 0.3}, {name: anti-k$_T$ R, value: 0.4},
+  ]
+  data_meas: [
+    # 0-5%
+    "inclusive_jet_RAA_R02", "inclusive_jet_RAA_R03", "inclusive_jet_RAA_R04",
+    # 5-10%
+    "inclusive_jet_RAA_R02", "inclusive_jet_RAA_R03", "inclusive_jet_RAA_R04",
+    # 10-30%
+    "inclusive_jet_RAA_R02", "inclusive_jet_RAA_R03", "inclusive_jet_RAA_R04",
+    # 30-50%
+    "inclusive_jet_RAA_R02", "inclusive_jet_RAA_R03", "inclusive_jet_RAA_R04",
+  ]
+  data_cent: [
+    "0-5", "0-5", "0-5",
+    "5-10", "5-10", "5-10",
+    "10-30", "10-30", "10-30",
+    "30-50", "30-50", "30-50",
+  ]
+  data_year: [
+    '2011', '2011', "2011",
+    '2011', '2011', "2011",
+    '2011', '2011', "2011",
+    '2011', '2011', "2011",
+  ]
+
+## 5 TeV ALICE
+## Checked: RJE
+hepdata_ALICE_JetRAA_5020:
+  filepath: *filepath
+  data_vrs: "Version 1.0"
+  data_str: "Data"
+  data_url: ["https://www.hepdata.net/download/table/ins1755387/Table%2030/1/yaml", "https://www.hepdata.net/download/table/ins1755387/Table%2031/1/yaml"]
+  data_doi: ['https://doi.org/10.1103/PhysRevC.101.034911', 'https://doi.org/10.1103/PhysRevC.101.034911']
+  data_fig: ['figure 6a', 'figure 6b']
+  data_exp: ['ALICE', 'ALICE']
+  data_sys: ['PbPb5020', 'PbPb5020']
+  data_meas: ["inclusive_jet_RAA_R02", "inclusive_jet_RAA_R04"]
+  data_cent: ['0-10', '0-10']
+  data_year: ['2015', '2015']
+
+## 5 TeV ATLAS
+## Checked: RJE
+hepdata_ATLAS_JetRAA_5020:
+  filepath: *filepath
+  data_vrs: "Version 1.0"
+  data_str: "Data"
+  data_url: ["https://www.hepdata.net/download/table/ins1673184/Table%2019/1/yaml",
+             "https://www.hepdata.net/download/table/ins1673184/Table%2020/1/yaml",
+             "https://www.hepdata.net/download/table/ins1673184/Table%2021/1/yaml",
+             "https://www.hepdata.net/download/table/ins1673184/Table%2022/1/yaml",
+             "https://www.hepdata.net/download/table/ins1673184/Table%2023/1/yaml"]
+  data_doi: ["https://doi.org/10.1016/j.physletb.2018.10.076", "https://doi.org/10.1016/j.physletb.2018.10.076", "https://doi.org/10.1016/j.physletb.2018.10.076", "https://doi.org/10.1016/j.physletb.2018.10.076", "https://doi.org/10.1016/j.physletb.2018.10.076"]
+  data_fig: ['figure 4', 'figure 4', 'figure 4', 'figure 4', "figure 4"]
+  data_exp: ['ATLAS', "ATLAS", 'ATLAS', "ATLAS", 'ATLAS']
+  data_sys: ['PbPb5020', 'PbPb5020', 'PbPb5020', 'PbPb5020', 'PbPb5020']
+  data_meas: ["inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04"]
+  data_cent: ['0-10', '10-20', "20-30", "30-40", "40-50"]
+  data_year: ['2015', '2015', '2015', '2015', '2015']
+
+## 5 TeV CMS
+## Checked: RJE
+hepdata_CMS_JetRAA_5020:
+  filepath: *filepath
+  data_vrs: "Version 1.0"
+  data_str: "Data"
+  data_url: [
+    # R02
+    "https://www.hepdata.net/download/table/ins1848440/Figure%207-1/1/yaml", "https://www.hepdata.net/download/table/ins1848440/Figure%207-1/1/yaml", "https://www.hepdata.net/download/table/ins1848440/Figure%207-1/1/yaml",
+    # R03
+    "https://www.hepdata.net/download/table/ins1848440/Figure%207-2/1/yaml", "https://www.hepdata.net/download/table/ins1848440/Figure%207-2/1/yaml", "https://www.hepdata.net/download/table/ins1848440/Figure%207-2/1/yaml",
+    # R04
+    "https://www.hepdata.net/download/table/ins1848440/Figure%207-3/1/yaml", "https://www.hepdata.net/download/table/ins1848440/Figure%207-3/1/yaml", "https://www.hepdata.net/download/table/ins1848440/Figure%207-3/1/yaml",
+    # R06
+    "https://www.hepdata.net/download/table/ins1848440/Figure%207-4/1/yaml", "https://www.hepdata.net/download/table/ins1848440/Figure%207-4/1/yaml", "https://www.hepdata.net/download/table/ins1848440/Figure%207-4/1/yaml",
+    # R08
+    "https://www.hepdata.net/download/table/ins1848440/Figure%207-5/1/yaml", "https://www.hepdata.net/download/table/ins1848440/Figure%207-5/1/yaml", "https://www.hepdata.net/download/table/ins1848440/Figure%207-5/1/yaml",
+    # R10
+    "https://www.hepdata.net/download/table/ins1848440/Figure%207-6/1/yaml", "https://www.hepdata.net/download/table/ins1848440/Figure%207-6/1/yaml", "https://www.hepdata.net/download/table/ins1848440/Figure%207-6/1/yaml",
+  ]
+  data_doi: [
+    # R02
+    "https://doi.org/10.1007/JHEP05(2021)284", "https://doi.org/10.1007/JHEP05(2021)284", "https://doi.org/10.1007/JHEP05(2021)284",
+    # R03
+    "https://doi.org/10.1007/JHEP05(2021)284", "https://doi.org/10.1007/JHEP05(2021)284", "https://doi.org/10.1007/JHEP05(2021)284",
+    # R04
+    "https://doi.org/10.1007/JHEP05(2021)284", "https://doi.org/10.1007/JHEP05(2021)284", "https://doi.org/10.1007/JHEP05(2021)284",
+    # R06
+    "https://doi.org/10.1007/JHEP05(2021)284", "https://doi.org/10.1007/JHEP05(2021)284", "https://doi.org/10.1007/JHEP05(2021)284",
+    # R08
+    "https://doi.org/10.1007/JHEP05(2021)284", "https://doi.org/10.1007/JHEP05(2021)284", "https://doi.org/10.1007/JHEP05(2021)284",
+    # R10
+    "https://doi.org/10.1007/JHEP05(2021)284", "https://doi.org/10.1007/JHEP05(2021)284", "https://doi.org/10.1007/JHEP05(2021)284",
+  ]
+  data_fig: [
+    # R02
+    'figure 7-1', 'figure 7-1', 'figure 7-1',
+    # R03
+    'figure 7-2', 'figure 7-2', 'figure 7-2',
+    # R04
+    'figure 7-3', 'figure 7-3', 'figure 7-3',
+    # R06
+    'figure 7-4', 'figure 7-4', 'figure 7-4',
+    # R08
+    'figure 7-5', 'figure 7-5', 'figure 7-5',
+    # R10
+    'figure 7-6', 'figure 7-6', 'figure 7-6',
+  ]
+  data_exp: [
+    # R02
+    'CMS', "CMS", "CMS",
+    # R03
+    'CMS', "CMS", "CMS",
+    # R04
+    'CMS', "CMS", "CMS",
+    # R06
+    'CMS', "CMS", "CMS",
+    # R08
+    'CMS', "CMS", "CMS",
+    # R10
+    'CMS', "CMS", "CMS",
+  ]
+  data_sys: [
+    # R02
+    'PbPb5020', 'PbPb5020', 'PbPb5020',
+    # R03
+    'PbPb5020', 'PbPb5020', 'PbPb5020',
+    # R04
+    'PbPb5020', 'PbPb5020', 'PbPb5020',
+    # R06
+    'PbPb5020', 'PbPb5020', 'PbPb5020',
+    # R08
+    'PbPb5020', 'PbPb5020', 'PbPb5020',
+    # R10
+    'PbPb5020', 'PbPb5020', 'PbPb5020',
+  ]
+  data_qualifiers: [
+    # R02
+    {name: CENTRALITY, value: 0-10}, {name: CENTRALITY, value: 10-30}, {name: CENTRALITY, value: 30-50},
+    # R03
+    {name: CENTRALITY, value: 0-10}, {name: CENTRALITY, value: 10-30}, {name: CENTRALITY, value: 30-50},
+    # R04
+    {name: CENTRALITY, value: 0-10}, {name: CENTRALITY, value: 10-30}, {name: CENTRALITY, value: 30-50},
+    # R06
+    {name: CENTRALITY, value: 0-10}, {name: CENTRALITY, value: 10-30}, {name: CENTRALITY, value: 30-50},
+    # R08
+    {name: CENTRALITY, value: 0-10}, {name: CENTRALITY, value: 10-30}, {name: CENTRALITY, value: 30-50},
+    # R10
+    {name: CENTRALITY, value: 0-10}, {name: CENTRALITY, value: 10-30}, {name: CENTRALITY, value: 30-50},
+  ]
+  data_meas: [
+    # R02
+    "inclusive_jet_RAA_R02", "inclusive_jet_RAA_R02", "inclusive_jet_RAA_R02",
+    # R03
+    "inclusive_jet_RAA_R03", "inclusive_jet_RAA_R03", "inclusive_jet_RAA_R03",
+    # R04
+    "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04", "inclusive_jet_RAA_R04",
+    # R06
+    "inclusive_jet_RAA_R06", "inclusive_jet_RAA_R06", "inclusive_jet_RAA_R06",
+    # R08
+    "inclusive_jet_RAA_R08", "inclusive_jet_RAA_R08", "inclusive_jet_RAA_R08",
+    # R10
+    "inclusive_jet_RAA_R10", "inclusive_jet_RAA_R10", "inclusive_jet_RAA_R10",
+  ]
+  data_cent: [
+    # R02
+    '0-10', '10-30', "30-50",
+    # R03
+    '0-10', '10-30', "30-50",
+    # R04
+    '0-10', '10-30', "30-50",
+    # R06
+    '0-10', '10-30', "30-50",
+    # R08
+    '0-10', '10-30', "30-50",
+    # R10
+    '0-10', '10-30', "30-50",
+  ]
+  data_year: [
+    # R02
+    '2015', '2015', '2015',
+    # R03
+    '2015', '2015', '2015',
+    # R04
+    '2015', '2015', '2015',
+    # R06
+    '2015', '2015', '2015',
+    # R08
+    '2015', '2015', '2015',
+    # R10
+    '2015', '2015', '2015',
+  ]
