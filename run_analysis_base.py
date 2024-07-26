@@ -311,6 +311,8 @@ class RunAnalysisBase():
   def qhat(self, T=0, E=0, Q=0, parameters=None):
 
     if self.model == "MATTER_LBT_QM_exponential":
+      msg = "This function has some subtle bugs. See the proper calculation at https://github.com/FHead/PhysicsJetScape/blob/c3c9adfeee72e1f9ce34728e174e35ca8a70065b/JetRAAPaper/26363_HPPaperPlots/QHat.h#L10-L35"
+      raise RuntimeError(msg)
       # Parameters
       alpha_s_fix, Q0, C1, C2, tau_0, C3 = parameters
       active_flavor = 3
@@ -322,8 +324,8 @@ class RunAnalysisBase():
       scale_net = 2 * E * T
       if scale_net < 1.0:
         scale_net = 1.0
-      # alpha_s should be taken as 2*E*T, per Abhijit. See: https://jetscapeworkspace.slack.com/archives/C025X5NE9SN/p1648404101376299
-      qhat = (C_a * 50.4864 / np.pi) * _running_alpha_s(mu_sqaure=scale_net, alpha_s=scale_net) * alpha_s_fix * np.pow(T, 3) * np.log(scale_net / debye_mass_square)
+      # Q^2 should be taken as 2*E*T, per Abhijit. See: https://jetscapeworkspace.slack.com/archives/C025X5NE9SN/p1648404101376299
+      qhat = (C_a * 50.4864 / np.pi) * _running_alpha_s(mu_sqaure=scale_net, alpha_s=alpha_s_fix) * alpha_s_fix * np.pow(T, 3) * np.log(scale_net / debye_mass_square)
       # This is not to be evaluated when evaluating qhat(T, E), per Abhijit. See: https://jetscapeworkspace.slack.com/archives/C025X5NE9SN/p1648404101376299
       #qhat = qhat * _virtuality_qhat_function(
       #  qhat_parametrization_type=ParametrizationType.exponential, ener_loc=E,
